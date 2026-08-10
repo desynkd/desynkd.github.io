@@ -1,0 +1,40 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/layout.astro";
+import Container from "@/components/Container.astro";
+import BackLink from "@/components/BackLink.astro";
+import PostCard from "@/components/PostCard.astro";
+
+const posts = (
+  await getCollection("blog", ({ data }) => import.meta.env.DEV || !data.draft)
+).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const years = [...new Set(posts.map((p) => p.data.date.getFullYear()))];
+---
+
+<BaseLayout title="Blog — Ravindu Peeris" description="Writing on what I'm building and thinking about." ditherTier="B">
+  <Container class="relative z-10">
+    <BackLink class="mt-10" />
+    <main class="py-12 sm:py-16">
+      <h1 class="text-hero text-ink">Blog</h1>
+
+      {years.map((year) => {
+        const yearPosts = posts.filter((p) => p.data.date.getFullYear() === year);
+        return (
+          <section class="mt-16 first:mt-12">
+            <h2 class="text-ui uppercase text-ink-mute">{year}</h2>
+            <div class="mt-2 divide-y divide-rule">
+              {yearPosts.map((post) => (
+                <PostCard post={post} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
+      {posts.length === 0 && (
+        <p class="mt-12 text-body text-ink-mute">Nothing published yet — check back soon.</p>
+      )}
+    </main>
+  </Container>
+</BaseLayout>

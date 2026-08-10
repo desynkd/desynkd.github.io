@@ -1,17 +1,23 @@
 ---
 import "../styles/global.css";
+import AmbientDither from "@/components/AmbientDither.astro";
+import Footer from "@/components/Footer.astro";
+import type { DitherTier } from "@/components/AmbientDither.astro";
 
 type Props = {
   title?: string;
   description?: string;
+  ditherTier?: DitherTier;
 };
 
 const {
-  title = "Ravindu Peeris",
-  description = "I touch grass regularly",
+  title = "Ravindu Peeris — Software Developer",
+  description = "Software developer building fast, reliable web apps and APIs.",
+  ditherTier = "B",
 } = Astro.props;
----
 
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
 
 <html lang="en">
 	<head>
@@ -20,15 +26,37 @@ const {
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		
-		<title>{title}</title>
-    	<meta name="description" content={description} />
 
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap" rel="stylesheet">
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+
+		<link
+			rel="preload"
+			href="/fonts/onest-600.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/onest-400.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
 	</head>
-	<body class="">
+	<body class="bg-paper text-ink">
+		<AmbientDither tier={ditherTier} />
 		<slot />
+		<Footer />
 	</body>
 </html>

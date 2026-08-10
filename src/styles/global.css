@@ -4,6 +4,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Self-hosted fonts — no Google Fonts CDN request, no third-party dependency. */
+@font-face {
+  font-family: "Onest";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/onest-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Onest";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/onest-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Onest";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/onest-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arvo";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/arvo-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arvo";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/arvo-700.woff2") format("woff2");
+}
 
 @layer base {
 	html {
@@ -18,9 +54,62 @@
 	}
 }
 
+@theme {
+  /* 6.1 — color, monochrome, muted */
+  --color-paper:        #F4F4F2;
+  --color-paper-raised: #EDEDEA;
+  --color-silver:       #DCDCD8;
+  --color-rule:         #C9C9C4;
+  --color-ink:          #232326;
+  --color-ink-soft:     #4A4A4F;
+  --color-ink-mute:     #74747A;
+
+  /* 6.2 — radius */
+  --radius-card: 32px;
+  --radius-pill: 9999px;
+
+  /* 6.3 — layout */
+  --container-main:    56rem;
+  /* Landing shell. Padding is inside max-width (border-box), so this is
+     content (56) + gap (3) + nav rail (14) + both gutters (2 × 3). */
+  --container-shell:   79rem;
+  --container-article: 61rem;
+  --measure:            38rem;
+  --rail:               20rem;  /* article image rail */
+  --nav-rail:           14rem;  /* landing side-nav column */
+  --gutter:             1.5rem; /* page side padding — steps up at sm/lg below */
+
+  /* 6.4 — type */
+  --font-sans: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Arvo", ui-serif, Georgia, serif;
+
+  --text-hero: clamp(2.75rem, 7vw, 5.5rem);
+  --text-hero--line-height: 0.95;
+  --text-hero--letter-spacing: -0.03em;
+  --text-hero--font-weight: 600;
+
+  --text-section: clamp(1.5rem, 3vw, 2.25rem);
+  --text-section--line-height: 1.15;
+  --text-section--letter-spacing: -0.02em;
+  --text-section--font-weight: 600;
+
+  --text-ui: 0.8125rem;
+  --text-ui--line-height: 1.4;
+  --text-ui--letter-spacing: 0.08em;
+  --text-ui--font-weight: 500;
+
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.7;
+
+  --text-article: 1.0625rem;
+  --text-article--line-height: 1.85;
+
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.5;
+}
+
 @theme inline {
 	--font-heading: var(--font-sans);
-	--font-sans: "Onest", ui-sans-serif, system-ui, sans-serif;
 	--color-sidebar-ring: var(--sidebar-ring);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -61,71 +150,76 @@
 	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* shadcn tokens mapped onto the monochrome palette (6.1) — light-only, per §14. */
 :root {
-	--background: oklch(1 0 0);
-	--foreground: oklch(0.145 0 0);
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.145 0 0);
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.145 0 0);
-	--primary: oklch(0.205 0 0);
-	--primary-foreground: oklch(0.985 0 0);
-	--secondary: oklch(0.97 0 0);
-	--secondary-foreground: oklch(0.205 0 0);
-	--muted: oklch(0.97 0 0);
-	--muted-foreground: oklch(0.556 0 0);
-	--accent: oklch(0.97 0 0);
-	--accent-foreground: oklch(0.205 0 0);
+	--background: var(--color-paper);
+	--foreground: var(--color-ink);
+	--card: var(--color-paper-raised);
+	--card-foreground: var(--color-ink);
+	--popover: var(--color-paper-raised);
+	--popover-foreground: var(--color-ink);
+	--primary: var(--color-ink);
+	--primary-foreground: var(--color-paper);
+	--secondary: var(--color-silver);
+	--secondary-foreground: var(--color-ink);
+	--muted: var(--color-paper-raised);
+	--muted-foreground: var(--color-ink-mute);
+	--accent: var(--color-silver);
+	--accent-foreground: var(--color-ink);
 	--destructive: oklch(0.577 0.245 27.325);
-	--border: oklch(0.922 0 0);
-	--input: oklch(0.922 0 0);
-	--ring: oklch(0.708 0 0);
+	--border: var(--color-rule);
+	--input: var(--color-rule);
+	--ring: var(--color-ink-mute);
 	--chart-1: oklch(0.87 0 0);
 	--chart-2: oklch(0.556 0 0);
 	--chart-3: oklch(0.439 0 0);
 	--chart-4: oklch(0.371 0 0);
 	--chart-5: oklch(0.269 0 0);
 	--radius: 0.625rem;
-	--sidebar: oklch(0.985 0 0);
-	--sidebar-foreground: oklch(0.145 0 0);
-	--sidebar-primary: oklch(0.205 0 0);
-	--sidebar-primary-foreground: oklch(0.985 0 0);
-	--sidebar-accent: oklch(0.97 0 0);
-	--sidebar-accent-foreground: oklch(0.205 0 0);
-	--sidebar-border: oklch(0.922 0 0);
-	--sidebar-ring: oklch(0.708 0 0);
+	--sidebar: var(--color-paper-raised);
+	--sidebar-foreground: var(--color-ink);
+	--sidebar-primary: var(--color-ink);
+	--sidebar-primary-foreground: var(--color-paper);
+	--sidebar-accent: var(--color-silver);
+	--sidebar-accent-foreground: var(--color-ink);
+	--sidebar-border: var(--color-rule);
+	--sidebar-ring: var(--color-ink-mute);
+
+	/* Shiki (theme: 'css-variables') mapped to the monochrome palette. */
+	--shiki-color-text: var(--color-ink);
+	--shiki-color-background: var(--color-paper-raised);
+	--shiki-token-constant: var(--color-ink);
+	--shiki-token-string: var(--color-ink-soft);
+	--shiki-token-comment: var(--color-ink-mute);
+	--shiki-token-keyword: var(--color-ink);
+	--shiki-token-parameter: var(--color-ink-soft);
+	--shiki-token-function: var(--color-ink);
+	--shiki-token-string-expression: var(--color-ink-soft);
+	--shiki-token-punctuation: var(--color-ink-mute);
+	--shiki-token-link: var(--color-ink);
 }
 
-.dark {
-	--background: oklch(0.145 0 0);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.205 0 0);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.205 0 0);
-	--popover-foreground: oklch(0.985 0 0);
-	--primary: oklch(0.922 0 0);
-	--primary-foreground: oklch(0.205 0 0);
-	--secondary: oklch(0.269 0 0);
-	--secondary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.269 0 0);
-	--muted-foreground: oklch(0.708 0 0);
-	--accent: oklch(0.269 0 0);
-	--accent-foreground: oklch(0.985 0 0);
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.556 0 0);
-	--chart-1: oklch(0.87 0 0);
-	--chart-2: oklch(0.556 0 0);
-	--chart-3: oklch(0.439 0 0);
-	--chart-4: oklch(0.371 0 0);
-	--chart-5: oklch(0.269 0 0);
-	--sidebar: oklch(0.205 0 0);
-	--sidebar-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.488 0.243 264.376);
-	--sidebar-primary-foreground: oklch(0.985 0 0);
-	--sidebar-accent: oklch(0.269 0 0);
-	--sidebar-accent-foreground: oklch(0.985 0 0);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.556 0 0);
+/* Responsive page gutter. Declared as a token so `px-(--gutter)` in Container.astro
+   is the single place any page reads it from — these overrides widen it with the
+   viewport without every page needing its own breakpoint classes. */
+@media (min-width: 640px) {
+	:root {
+		--gutter: 2rem;
+	}
+}
+@media (min-width: 1024px) {
+	:root {
+		--gutter: 3rem;
+	}
+}
+
+/* Anchor links from the side nav land below the sticky rail's top edge. */
+section[id] {
+	scroll-margin-top: 5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
 }

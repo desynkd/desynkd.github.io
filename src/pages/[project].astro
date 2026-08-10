@@ -1,0 +1,36 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import ProjectLayout from "@/layouts/ProjectLayout.astro";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+export async function getStaticPaths() {
+  // Reserved-slug guard (plan §9.4): root-level project slugs share a namespace
+  // with top-level routes. Fail the build loudly rather than let a project
+  // silently shadow a page. (Defined inside getStaticPaths — Astro extracts
+  // this function in isolation, so outer-scope consts aren't available here.)
+  const RESERVED = new Set(["blog", "rss", "404", "about", "_astro", "fonts"]);
+
+  const projects = await getCollection("projects");
+  for (const p of projects) {
+    if (RESERVED.has(p.slug)) {
+      throw new Error(
+        `Project slug "${p.slug}" collides with a reserved top-level route. Rename the file.`
+      );
+    }
+  }
+  return projects.map((project) => ({
+    params: { project: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+---
+
+<ProjectLayout project={project}>
+  <Content />
+</ProjectLayout>

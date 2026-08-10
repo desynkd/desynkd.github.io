@@ -1,0 +1,32 @@
+.article {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Margins, not gap — so the mobile flex rhythm matches the desktop block rhythm. */
+.article > * { margin: 0 0 1.25rem; }
+.article > h2 { margin-top: 2.5rem; }
+.article > h3 { margin-top: 1.75rem; }
+
+.article > figure {
+  order: 1;          /* mobile: collect at the end, in source order */
+  margin: 0 0 2rem;
+}
+
+@media (min-width: 1024px) {
+  .article { display: block; max-width: var(--container-article); }
+
+  /* Prose is capped, so it never reaches the float. */
+  .article > *:not(figure) { max-width: var(--measure); }
+
+  .article > figure {
+    order: 0;
+    float: right;
+    clear: right;              /* consecutive figures stack, never overlap */
+    width: var(--rail);
+    margin: 0.375rem 0 2rem 3rem;
+  }
+
+  /* Floats must not escape the article. */
+  .article::after { content: ""; display: block; clear: both; }
+}

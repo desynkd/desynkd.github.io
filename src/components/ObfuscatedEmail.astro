@@ -1,0 +1,25 @@
+---
+import { site } from "@/lib/site";
+
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+const { user, domain } = site.email;
+---
+
+<a
+  class:list={["obfuscated-email underline decoration-rule underline-offset-4 hover:decoration-ink", className]}
+  data-user={user}
+  data-domain={domain}
+  href="#"
+>
+  {user}&#64;{domain}
+</a>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>(".obfuscated-email").forEach((el) => {
+    const { user, domain } = el.dataset;
+    el.href = `mailto:${user}@${domain}`;
+  });
+</script>

@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+}
+const { post } = Astro.props;
+const { title, description, date, tags } = post.data;
+const dateFormatted = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+---
+
+<a href={`/blog/${post.slug}`} class="group block cursor-pointer py-5">
+  <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <h3 class="text-[1.0625rem] font-medium text-ink transition-colors duration-200 group-hover:text-ink-soft">
+      {title}
+    </h3>
+    <span class="shrink-0 text-caption text-ink-mute">{dateFormatted}</span>
+  </div>
+  <p class="mt-1 max-w-[42rem] text-body text-ink-mute">{description}</p>
+  {tags.length > 0 && (
+    <ul class="mt-3 flex flex-wrap gap-2">
+      {tags.map((tag) => (
+        <li class="text-ui uppercase text-ink-mute">#{tag}</li>
+      ))}
+    </ul>
+  )}
+</a>

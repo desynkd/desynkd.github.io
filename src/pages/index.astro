@@ -1,9 +1,139 @@
 ---
-import BaseLayout from "../layouts/layout.astro";
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/layout.astro";
+import Container from "@/components/Container.astro";
+import SideNav from "@/components/SideNav.astro";
+import AvailabilityBadge from "@/components/AvailabilityBadge.astro";
+import ProjectCard from "@/components/ProjectCard.astro";
+import PostCard from "@/components/PostCard.astro";
+import ObfuscatedEmail from "@/components/ObfuscatedEmail.astro";
+import { site } from "@/lib/site";
+
+const projects = (await getCollection("projects", ({ data }) => data.featured))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 4);
+
+const posts = (
+  await getCollection("blog", ({ data }) => import.meta.env.DEV || !data.draft)
+)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: site.name,
+  jobTitle: site.role,
+  url: "https://desynkd.github.io",
+  sameAs: [site.github, site.linkedin, site.upwork],
+};
 ---
 
-<BaseLayout>
-	<div class="flex flex-col items-center justify-center h-screen">
-		<h1 class="text-2xl lg:text-4xl max-w-4xl text-center font-semibold text-gray-300 animate-pulse">I just wanted to test out Astro.... I'll have something else here soon</h1>
-	</div>
+<BaseLayout ditherTier="A">
+  <script type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
+  <Container
+    size="shell"
+    class="relative z-30 lg:grid lg:grid-cols-[minmax(0,1fr)_var(--nav-rail)] lg:items-start lg:gap-12"
+  >
+    <main class="min-w-0">
+      <!-- Hero -->
+      <section class="flex min-h-[85vh] flex-col justify-center py-16">
+        <h1 class="text-hero text-ink">{site.name}</h1>
+        <p class="mt-6 max-w-(--measure) text-body text-ink-soft">{site.positioning}</p>
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <AvailabilityBadge />
+        </div>
+        <div class="mt-10 flex flex-wrap items-center gap-4">
+          <a
+            href="#contact"
+            class="cursor-pointer rounded-(--radius-pill) bg-ink px-6 py-3 text-ui uppercase text-paper transition-colors duration-200 hover:bg-ink-soft"
+          >
+            Get in touch
+          </a>
+          <a
+            href={site.resumeHref}
+            class="cursor-pointer rounded-(--radius-pill) bg-paper-raised px-6 py-3 text-ui uppercase text-ink-soft transition-colors duration-200 hover:bg-silver"
+          >
+            Resume
+          </a>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section id="about" class="py-16 sm:py-20">
+        <h2 class="text-ui uppercase text-ink-mute">About</h2>
+        <div class="mt-4 max-w-(--measure) space-y-4 text-body text-ink-soft">
+          {site.about.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+        </div>
+      </section>
+
+      <!-- Selected work -->
+      <section id="work" class="py-16 sm:py-20">
+        <h2 class="text-ui uppercase text-ink-mute">Selected work</h2>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          {projects.map((project) => (
+            <ProjectCard project={project} />
+          ))}
+        </div>
+      </section>
+
+      <!-- Capabilities -->
+      <section id="capabilities" class="py-16 sm:py-20">
+        <h2 class="text-ui uppercase text-ink-mute">Capabilities</h2>
+        <p class="mt-4 max-w-(--measure) text-body text-ink-soft">{site.capabilities.helpWith}</p>
+        <div class="mt-8 grid gap-8 sm:grid-cols-2">
+          {site.capabilities.groups.map((group) => (
+            <div>
+              <h3 class="text-caption uppercase text-ink-mute">{group.label}</h3>
+              <ul class="mt-3 flex flex-wrap gap-2">
+                {group.items.map((item) => (
+                  <li class="rounded-(--radius-pill) bg-silver px-3 py-1 text-ui uppercase text-ink-soft">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Recent writing -->
+      {posts.length > 0 && (
+        <section id="writing" class="py-16 sm:py-20">
+          <div class="flex items-baseline justify-between">
+            <h2 class="text-ui uppercase text-ink-mute">Recent writing</h2>
+            <a href="/blog" class="cursor-pointer text-ui uppercase text-ink-soft transition-colors duration-200 hover:text-ink">
+              All posts
+            </a>
+          </div>
+          <div class="mt-4 divide-y divide-rule">
+            {posts.map((post) => (
+              <PostCard post={post} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Contact -->
+      <section id="contact" class="py-16 sm:py-20">
+        <h2 class="text-ui uppercase text-ink-mute">Contact</h2>
+        <div class="mt-4">
+          <AvailabilityBadge />
+        </div>
+        <p class="mt-6 max-w-(--measure) text-body text-ink-soft">
+          Reach out at <ObfuscatedEmail /> — or find me on the links below.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-ui uppercase">
+          <a href={site.github} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">GitHub</a>
+          <a href={site.linkedin} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">LinkedIn</a>
+          <a href={site.upwork} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">Upwork</a>
+          <a href={site.resumeHref} class="text-ink-soft transition-colors duration-200 hover:text-ink">Resume</a>
+        </div>
+      </section>
+    </main>
+
+    <SideNav />
+  </Container>
 </BaseLayout>

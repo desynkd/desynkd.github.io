@@ -1,0 +1,15 @@
+---
+interface Props {
+  stack: string[];
+  class?: string;
+}
+const { stack, class: className = "" } = Astro.props;
+---
+
+<ul class:list={["flex flex-wrap gap-2", className]}>
+  {stack.map((item) => (
+    <li class="rounded-(--radius-pill) bg-silver px-3 py-1 text-ui uppercase text-ink-soft">
+      {item}
+    </li>
+  ))}
+</ul>

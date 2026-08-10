@@ -1,0 +1,15 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  caption?: string;
+}
+const { src, alt, caption } = Astro.props;
+---
+
+<figure>
+  <Image src={src} alt={alt} widths={[320, 640, 960]} class="w-full rounded-(--radius-card)" />
+  {caption && <figcaption class="mt-2 text-caption text-ink-mute">{caption}</figcaption>}
+</figure>

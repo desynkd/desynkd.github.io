@@ -1,0 +1,22 @@
+---
+// Sub-routes carry no side nav — just this, top left, back to the landing page.
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+---
+
+<a
+  href="/"
+  class:list={[
+    "group inline-flex items-center gap-2 text-ui uppercase text-ink-mute transition-colors duration-200 hover:text-ink",
+    className,
+  ]}
+>
+  <span
+    aria-hidden="true"
+    class="transition-transform duration-200 group-hover:-translate-x-1 motion-reduce:transition-none"
+    >&larr;</span
+  >
+  Back
+</a>

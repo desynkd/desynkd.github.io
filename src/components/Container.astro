@@ -1,0 +1,16 @@
+---
+// The one centered/constrained container (plan §6.3) — never re-implement inline.
+// `main` (56rem) is the default; `shell` (73rem) is the landing page, which holds
+// the 56rem content column plus the side-nav rail beside it.
+interface Props {
+  class?: string;
+  size?: "main" | "shell";
+}
+const { class: className = "", size = "main" } = Astro.props;
+
+const maxWidth = size === "shell" ? "max-w-(--container-shell)" : "max-w-(--container-main)";
+---
+
+<div class:list={["mx-auto w-full px-(--gutter)", maxWidth, className]}>
+  <slot />
+</div>

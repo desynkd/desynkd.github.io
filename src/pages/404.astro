@@ -1,0 +1,23 @@
+---
+import BaseLayout from "@/layouts/layout.astro";
+import Container from "@/components/Container.astro";
+import BackLink from "@/components/BackLink.astro";
+---
+
+<BaseLayout title="Page not found — Ravindu Peeris" description="This page doesn't exist." ditherTier="B">
+  <Container class="relative z-10">
+    <BackLink class="mt-10" />
+    <main class="flex min-h-[70vh] flex-col justify-center py-16">
+      <h1 class="text-hero text-ink">404</h1>
+      <p class="mt-4 max-w-(--measure) text-body text-ink-soft">
+        This page doesn't exist. It might have moved, or the link is wrong.
+      </p>
+      <a
+        href="/"
+        class="mt-8 inline-block w-fit cursor-pointer rounded-(--radius-pill) bg-ink px-6 py-3 text-ui uppercase text-paper transition-colors duration-200 hover:bg-ink-soft"
+      >
+        Back home
+      </a>
+    </main>
+  </Container>
+</BaseLayout>

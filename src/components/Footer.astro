@@ -1,0 +1,33 @@
+---
+import Container from "@/components/Container.astro";
+import ObfuscatedEmail from "@/components/ObfuscatedEmail.astro";
+import { site } from "@/lib/site";
+
+const year = new Date().getFullYear();
+const links = [
+  { label: "GitHub", href: site.github },
+  { label: "LinkedIn", href: site.linkedin },
+  { label: "Upwork", href: site.upwork },
+];
+---
+
+<footer class="relative z-20 mt-24 py-10">
+  <Container class="flex flex-col gap-6 border-t border-rule pt-8 sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-caption text-ink-mute">
+      &copy; {year} {site.name}. Built with Astro.
+    </p>
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-ui uppercase">
+      {links.map((link) => (
+        <a
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-ink-soft transition-colors duration-200 hover:text-ink"
+        >
+          {link.label}
+        </a>
+      ))}
+      <ObfuscatedEmail class="text-ink-soft normal-case tracking-normal hover:text-ink" />
+    </div>
+  </Container>
+</footer>

@@ -1,0 +1,194 @@
+---
+// Landing-page navigation. Desktop: a sticky column in the right rail.
+// Mobile: collapsed behind a hamburger at top right that opens it as a panel.
+import { site } from "@/lib/site";
+
+const sections = [
+  { label: "About", id: "about" },
+  { label: "Selected work", id: "work" },
+  { label: "Capabilities", id: "capabilities" },
+  { label: "Writing", id: "writing" },
+  { label: "Contact", id: "contact" },
+];
+
+const pages = [
+  { label: "Blog", href: "/blog" },
+  { label: "Resume", href: site.resumeHref },
+];
+---
+
+<button
+  id="nav-toggle"
+  type="button"
+  class="fixed right-(--gutter) top-5 z-50 inline-flex size-11 items-center justify-center rounded-(--radius-pill) bg-paper-raised text-ink transition-colors duration-200 hover:bg-silver lg:hidden"
+  aria-controls="side-nav"
+  aria-expanded="false"
+  aria-label="Open menu"
+>
+  <span class="nav-icon" aria-hidden="true">
+    <span></span>
+    <span></span>
+  </span>
+</button>
+
+<div
+  id="nav-overlay"
+  class="pointer-events-none fixed inset-0 z-40 bg-ink/25 opacity-0 transition-opacity duration-200 motion-reduce:transition-none lg:hidden"
+  aria-hidden="true"
+></div>
+
+<aside
+  id="side-nav"
+  class="fixed bottom-0 right-0 top-0 z-40 w-64 max-w-[80vw] translate-x-full bg-paper-raised px-(--gutter) pb-10 pt-24 transition-transform duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none lg:sticky lg:bottom-auto lg:right-auto lg:top-16 lg:z-10 lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:self-start lg:bg-transparent lg:px-0 lg:py-16"
+>
+  <nav aria-label="Site">
+    <ul class="flex flex-col gap-3">
+      {sections.map((section) => (
+        <li>
+          <a
+            href={`#${section.id}`}
+            data-section={section.id}
+            class="nav-link block text-ui uppercase text-ink-mute transition-colors duration-200 hover:text-ink"
+          >
+            {section.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <ul class="mt-8 flex flex-col gap-3">
+      {pages.map((page) => (
+        <li>
+          <a
+            href={page.href}
+            class="nav-link block text-ui uppercase text-ink-soft transition-colors duration-200 hover:text-ink"
+          >
+            {page.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</aside>
+
+<style>
+  /* Two bars that cross into an X when the panel is open. */
+  .nav-icon {
+    position: relative;
+    display: block;
+    width: 1.125rem;
+    height: 0.625rem;
+  }
+  .nav-icon span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .nav-icon span:first-child {
+    top: 0;
+  }
+  .nav-icon span:last-child {
+    bottom: 0;
+  }
+  [aria-expanded="true"] .nav-icon span:first-child {
+    transform: translateY(4.5px) rotate(45deg);
+  }
+  [aria-expanded="true"] .nav-icon span:last-child {
+    transform: translateY(-4.5px) rotate(-45deg);
+  }
+
+  /* Active section — emphasis by weight and tone, no chromatic accent (§6.6). */
+  .nav-link[aria-current="true"] {
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-icon span {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById("nav-toggle");
+  const panel = document.getElementById("side-nav");
+  const overlay = document.getElementById("nav-overlay");
+
+  if (toggle && panel && overlay) {
+    const OPEN_CLASSES = ["translate-x-0"];
+    const CLOSED_CLASSES = ["translate-x-full"];
+
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      panel.classList.toggle(OPEN_CLASSES[0], open);
+      panel.classList.toggle(CLOSED_CLASSES[0], !open);
+      overlay.classList.toggle("opacity-100", open);
+      overlay.classList.toggle("opacity-0", !open);
+      overlay.classList.toggle("pointer-events-auto", open);
+      overlay.classList.toggle("pointer-events-none", !open);
+      // Lock the page behind the panel, but only while it is actually open.
+      document.body.style.overflow = open ? "hidden" : "";
+    };
+
+    const isOpen = () => toggle.getAttribute("aria-expanded") === "true";
+
+    toggle.addEventListener("click", () => setOpen(!isOpen()));
+    overlay.addEventListener("click", () => setOpen(false));
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isOpen()) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    // Tapping a link on mobile navigates and should dismiss the panel.
+    panel.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => setOpen(false));
+    });
+
+    // The panel is desktop-static above lg; never leave it locked when resizing.
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    desktop.addEventListener("change", (e) => {
+      if (e.matches && isOpen()) setOpen(false);
+    });
+  }
+
+  // Active-section highlight. Tracks which observed sections are in the reading
+  // band and marks the topmost one in document order.
+  const links = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("#side-nav a[data-section]")
+  );
+  const sections = links
+    .map((link) => document.getElementById(link.dataset.section!))
+    .filter((el): el is HTMLElement => el !== null);
+
+  if (sections.length > 0) {
+    const visible = new Set<string>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        }
+
+        const active = sections.find((section) => visible.has(section.id));
+        for (const link of links) {
+          if (active && link.dataset.section === active.id) {
+            link.setAttribute("aria-current", "true");
+          } else {
+            link.removeAttribute("aria-current");
+          }
+        }
+      },
+      { rootMargin: "-25% 0px -60% 0px", threshold: 0 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+  }
+</script>
