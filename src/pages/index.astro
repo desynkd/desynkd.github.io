@@ -74,11 +74,20 @@ const personJsonLd = {
       <!-- Selected work -->
       <section id="work" class="py-16 sm:py-20">
         <h2 class="text-ui uppercase text-ink-mute">Selected work</h2>
-        <div class="mt-6 grid gap-4 sm:grid-cols-2">
-          {projects.map((project) => (
-            <ProjectCard project={project} />
-          ))}
-        </div>
+        {projects.length > 0 ? (
+          <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            {projects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </div>
+        ) : (
+          <div class="mt-6 flex min-h-[14rem] items-center justify-center px-6">
+            <p class="max-w-[28rem] text-balance text-center text-ui font-semibold uppercase text-ink-mute opacity-40">
+              Nothing on display yet. When I build something I find genuinely
+              interesting, it lands here.
+            </p>
+          </div>
+        )}
       </section>
 
       <!-- Capabilities -->

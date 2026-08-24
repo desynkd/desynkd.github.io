@@ -17,7 +17,7 @@ export const site = {
   capabilities: {
     helpWith: "Backend APIs, full-stack web apps, and small automation tools. From a rough idea to something deployed and working.",
     groups: [
-      { label: "Languages", items: ["TypeScript", "Python"] },
+      { label: "Languages", items: ["TypeScript", "Python", "C/C++"] },
       { label: "Frameworks", items: ["Next.js", "React", "NestJS", "Node.js"] },
       { label: "Tools", items: ["MongoDb", "PostgreSQL"] },
       { label: "Practices", items: ["REST APIs", "CI/CD", "Testing", "Code review"] },

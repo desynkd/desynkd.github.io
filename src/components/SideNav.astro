@@ -13,7 +13,8 @@ const sections = [
 
 const pages = [
   { label: "Blog", href: "/blog" },
-  { label: "Resume", href: site.resumeHref },
+  // Disable resume for now
+  { label: "Resume", href: site.resumeHref, disabled: true },
 ];
 ---
 
@@ -59,12 +60,21 @@ const pages = [
     <ul class="mt-8 flex flex-col gap-3">
       {pages.map((page) => (
         <li>
-          <a
-            href={page.href}
-            class="nav-link block text-ui uppercase text-ink-soft transition-colors duration-200 hover:text-ink"
-          >
-            {page.label}
-          </a>
+          {page.disabled ? (
+            <span
+              aria-disabled="true"
+              class="nav-link block cursor-default select-none text-ui uppercase text-ink-mute opacity-50"
+            >
+              {page.label}
+            </span>
+          ) : (
+            <a
+              href={page.href}
+              class="nav-link block text-ui uppercase text-ink-soft transition-colors duration-200 hover:text-ink"
+            >
+              {page.label}
+            </a>
+          )}
         </li>
       ))}
     </ul>
