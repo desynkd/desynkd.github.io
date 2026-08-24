@@ -50,9 +50,11 @@ const personJsonLd = {
           >
             Get in touch
           </a>
+          <!-- Disable resume for now -->
           <a
-            href={site.resumeHref}
-            class="cursor-pointer rounded-(--radius-pill) bg-paper-raised px-6 py-3 text-ui uppercase text-ink-soft transition-colors duration-200 hover:bg-silver"
+            aria-disabled="true"
+            tabindex="-1"
+            class="pointer-events-none rounded-(--radius-pill) bg-paper-raised px-6 py-3 text-ui uppercase text-ink-mute opacity-50 select-none"
           >
             Resume
           </a>
@@ -123,13 +125,14 @@ const personJsonLd = {
           <AvailabilityBadge />
         </div>
         <p class="mt-6 max-w-(--measure) text-body text-ink-soft">
-          Reach out at <ObfuscatedEmail /> — or find me on the links below.
+          Reach out at <ObfuscatedEmail /> or find me on the links below.
         </p>
         <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-ui uppercase">
           <a href={site.github} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">GitHub</a>
           <a href={site.linkedin} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">LinkedIn</a>
           <a href={site.upwork} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">Upwork</a>
-          <a href={site.resumeHref} class="text-ink-soft transition-colors duration-200 hover:text-ink">Resume</a>
+          <!-- Hide resume for now -->
+          <!-- <a href={site.resumeHref} class="text-ink-soft transition-colors duration-200 hover:text-ink">Resume</a> -->
         </div>
       </section>
     </main>
