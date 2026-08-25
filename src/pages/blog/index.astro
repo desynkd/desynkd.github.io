@@ -33,7 +33,11 @@ const years = [...new Set(posts.map((p) => p.data.date.getFullYear()))];
       })}
 
       {posts.length === 0 && (
-        <p class="mt-12 text-body text-ink-mute">Nothing published yet — check back soon.</p>
+        <div class="mt-6 flex min-h-[14rem] items-center justify-center px-6">
+          <p class="max-w-[28rem] text-balance text-center text-ui font-semibold uppercase text-ink-mute opacity-40">
+            Nothing published yet. Check back soon.
+          </p>
+        </div>
       )}
     </main>
   </Container>
