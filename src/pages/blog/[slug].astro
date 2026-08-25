@@ -9,7 +9,7 @@ interface Props {
 export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => import.meta.env.DEV || !data.draft);
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }

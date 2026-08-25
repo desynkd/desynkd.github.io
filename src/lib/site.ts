@@ -13,7 +13,7 @@ export const site = {
   github: "https://github.com/desynkd",
   linkedin: "https://www.linkedin.com/in/ravindupeeris/",
   upwork: "https://www.upwork.com/freelancers/~0125d7da76fcef473a?mp_source=share",
-  resumeHref: "/ravindu-peeris-cv.pdf",
+  resumeHref: "/resume.pdf",
   capabilities: {
     helpWith: "Backend APIs, full-stack web apps, and small automation tools. From a rough idea to something deployed and working.",
     groups: [

@@ -15,14 +15,14 @@ export async function getStaticPaths() {
 
   const projects = await getCollection("projects");
   for (const p of projects) {
-    if (RESERVED.has(p.slug)) {
+    if (RESERVED.has(p.id)) {
       throw new Error(
-        `Project slug "${p.slug}" collides with a reserved top-level route. Rename the file.`
+        `Project slug "${p.id}" collides with a reserved top-level route. Rename the object in R2.`
       );
     }
   }
   return projects.map((project) => ({
-    params: { project: project.slug },
+    params: { project: project.id },
     props: { project },
   }));
 }
