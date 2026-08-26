@@ -9,7 +9,7 @@ const { title, description, date, tags } = post.data;
 const dateFormatted = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 ---
 
-<a href={`/blog/${post.id}`} class="group block cursor-pointer py-5">
+<a href={`/blog/${post.id}`} class="group -mx-6 block cursor-pointer rounded-(--radius-card) px-6 py-5 transition-colors duration-200 hover:bg-[#d2d2d0]">
   <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
     <h3 class="text-[1.0625rem] font-medium text-ink transition-colors duration-200 group-hover:text-ink-soft">
       {title}
