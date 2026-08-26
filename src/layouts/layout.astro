@@ -60,3 +60,75 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<Footer />
 	</body>
 </html>
+
+<script>
+  // Site-wide reveal. Every section stages its own items in, once, as it enters
+  // the viewport — no per-page wiring, so new pages inherit this for free.
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Long-form prose reveals as a single block; staggering every paragraph of
+    // an article reads as busy rather than considered.
+    const BLOCK = ".article, .prose-project";
+    const SKIP = new Set(["SCRIPT", "STYLE", "TEMPLATE", "LINK", "META"]);
+
+    // A wrapper is transparent scaffolding — a card grid, a divided list, a chip
+    // row — when it holds several siblings and no copy of its own. Reveal what
+    // is inside it, so "item" means the card, not the box around four cards.
+    const isWrapper = (el: Element) =>
+      (el.tagName === "DIV" || el.tagName === "UL" || el.tagName === "OL") &&
+      !el.matches(BLOCK) &&
+      el.children.length > 1 &&
+      !Array.from(el.childNodes).some(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
+      );
+
+    const itemsOf = (group: Element, exclude?: string) =>
+      Array.from(group.children)
+        .filter((el) => !SKIP.has(el.tagName) && !(exclude && el.matches(exclude)))
+        .flatMap((el) => (isWrapper(el) ? Array.from(el.children) : [el]))
+        .filter((el) => !SKIP.has(el.tagName));
+
+    const main = document.querySelector("main");
+
+    if (main) {
+      // Sections and headers stage themselves; whatever sits directly under
+      // <main> beside them (page title, project meta) stages as one group.
+      const nested = ":scope > section, :scope > header";
+      const groups: Array<[Element, Element[]]> = [
+        [main, itemsOf(main, "section, header")],
+        ...Array.from(main.querySelectorAll(nested)).map(
+          (section): [Element, Element[]] => [section, itemsOf(section)]
+        ),
+      ];
+
+      for (const [group, items] of groups) {
+        if (items.length === 0) continue;
+
+        gsap.from(items, {
+          opacity: 0,
+          y: 16,
+          duration: 0.6,
+          ease: "power2.out",
+          stagger: 0.08,
+          scrollTrigger: {
+            trigger: group,
+            // Anything already on screen at load has passed this mark, so the
+            // hero plays immediately instead of waiting for a scroll.
+            start: "top 85%",
+            once: true,
+          },
+          // Leave no inline transform behind; a stray translate would create a
+          // stacking context under the layered ambient background.
+          onComplete: () => gsap.set(items, { clearProps: "opacity,transform" }),
+        });
+      }
+
+      // Font swap reflows the page after the triggers are measured.
+      document.fonts?.ready.then(() => ScrollTrigger.refresh());
+    }
+  }
+</script>
