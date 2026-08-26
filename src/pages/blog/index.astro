@@ -13,9 +13,9 @@ const years = [...new Set(posts.map((p) => p.data.date.getFullYear()))];
 ---
 
 <BaseLayout title="Blog" description="Writing on what I'm building and thinking about." ditherTier="B">
-  <Container class="relative z-10">
+  <Container class="relative z-10 flex flex-1 flex-col">
     <BackLink class="mt-10" />
-    <main class="py-12 sm:py-16">
+    <main class="flex flex-1 flex-col py-12 sm:py-16">
       <h1 class="text-hero text-ink">Blog</h1>
 
       {years.map((year) => {

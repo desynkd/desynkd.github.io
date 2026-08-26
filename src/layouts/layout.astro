@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import AmbientDither from "@/components/AmbientDither.astro";
 import Footer from "@/components/Footer.astro";
+import Preloader from "@/components/Preloader.astro";
 import type { DitherTier } from "@/components/AmbientDither.astro";
 
 type Props = {
@@ -26,6 +27,16 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
+
+		<!-- Inline and first, so the document's own background is grey rather
+		     than the browser's default white the moment anything paints. Applies
+		     to navigations too, where the overlay is deliberately absent. -->
+		<style is:inline>
+			html {
+				background: #ededea;
+			}
+		</style>
+		<meta name="theme-color" content="#EDEDEA" />
 
 		<title>{title}</title>
 		<meta name="description" content={description} />
@@ -54,7 +65,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			crossorigin
 		/>
 	</head>
-	<body class="bg-paper text-ink">
+	<body class="flex min-h-dvh flex-col bg-paper text-ink">
+		<Preloader />
 		<AmbientDither tier={ditherTier} />
 		<slot />
 		<Footer />
@@ -62,73 +74,106 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 </html>
 
 <script>
-  // Site-wide reveal. Every section stages its own items in, once, as it enters
-  // the viewport — no per-page wiring, so new pages inherit this for free.
+  // Site-wide reveal, gated on the preloader. Every section stages its own items
+  // in, once, as it enters the viewport — no per-page wiring, so new pages
+  // inherit this for free.
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger);
 
-    // Long-form prose reveals as a single block; staggering every paragraph of
-    // an article reads as busy rather than considered.
-    const BLOCK = ".article, .prose-project";
-    const SKIP = new Set(["SCRIPT", "STYLE", "TEMPLATE", "LINK", "META"]);
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // A wrapper is transparent scaffolding — a card grid, a divided list, a chip
-    // row — when it holds several siblings and no copy of its own. Reveal what
-    // is inside it, so "item" means the card, not the box around four cards.
-    const isWrapper = (el: Element) =>
-      (el.tagName === "DIV" || el.tagName === "UL" || el.tagName === "OL") &&
-      !el.matches(BLOCK) &&
-      el.children.length > 1 &&
-      !Array.from(el.childNodes).some(
-        (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
-      );
+  // Long-form prose reveals as a single block; staggering every paragraph of
+  // an article reads as busy rather than considered.
+  const BLOCK = ".article, .prose-project";
+  const SKIP = new Set(["SCRIPT", "STYLE", "TEMPLATE", "LINK", "META"]);
 
-    const itemsOf = (group: Element, exclude?: string) =>
-      Array.from(group.children)
-        .filter((el) => !SKIP.has(el.tagName) && !(exclude && el.matches(exclude)))
-        .flatMap((el) => (isWrapper(el) ? Array.from(el.children) : [el]))
-        .filter((el) => !SKIP.has(el.tagName));
+  // A wrapper is transparent scaffolding — a card grid, a divided list, a chip
+  // row — when it holds several siblings and no copy of its own. Reveal what
+  // is inside it, so "item" means the card, not the box around four cards.
+  const isWrapper = (el: Element) =>
+    (el.tagName === "DIV" || el.tagName === "UL" || el.tagName === "OL") &&
+    !el.matches(BLOCK) &&
+    el.children.length > 1 &&
+    !Array.from(el.childNodes).some(
+      (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
+    );
 
-    const main = document.querySelector("main");
+  const itemsOf = (group: Element, exclude?: string) =>
+    Array.from(group.children)
+      .filter((el) => !SKIP.has(el.tagName) && !(exclude && el.matches(exclude)))
+      .flatMap((el) => (isWrapper(el) ? Array.from(el.children) : [el]))
+      .filter((el) => !SKIP.has(el.tagName));
 
-    if (main) {
-      // Sections and headers stage themselves; whatever sits directly under
-      // <main> beside them (page title, project meta) stages as one group.
-      const nested = ":scope > section, :scope > header";
-      const groups: Array<[Element, Element[]]> = [
-        [main, itemsOf(main, "section, header")],
-        ...Array.from(main.querySelectorAll(nested)).map(
-          (section): [Element, Element[]] => [section, itemsOf(section)]
-        ),
-      ];
+  const main = document.querySelector("main");
+  const groups: Array<[Element, Element[]]> = [];
 
-      for (const [group, items] of groups) {
-        if (items.length === 0) continue;
-
-        gsap.from(items, {
-          opacity: 0,
-          y: 16,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.08,
-          scrollTrigger: {
-            trigger: group,
-            // Anything already on screen at load has passed this mark, so the
-            // hero plays immediately instead of waiting for a scroll.
-            start: "top 85%",
-            once: true,
-          },
-          // Leave no inline transform behind; a stray translate would create a
-          // stacking context under the layered ambient background.
-          onComplete: () => gsap.set(items, { clearProps: "opacity,transform" }),
-        });
-      }
-
-      // Font swap reflows the page after the triggers are measured.
-      document.fonts?.ready.then(() => ScrollTrigger.refresh());
+  if (main && !reduced) {
+    // Sections and headers stage themselves; whatever sits directly under
+    // <main> beside them (page title, project meta) stages as one group.
+    const nested = ":scope > section, :scope > header";
+    for (const [group, items] of [
+      [main, itemsOf(main, "section, header")] as [Element, Element[]],
+      ...Array.from(main.querySelectorAll(nested)).map(
+        (section): [Element, Element[]] => [section, itemsOf(section)]
+      ),
+    ]) {
+      if (items.length > 0) groups.push([group, items]);
     }
+  }
+
+  // Hide everything now, while the overlay still covers the page. Deferring this
+  // until the overlay lifts would expose fully-visible content for a frame and
+  // then snap it to hidden.
+  for (const [, items] of groups) gsap.set(items, { opacity: 0, y: 16 });
+
+  const play = () => {
+    for (const [group, items] of groups) {
+      gsap.to(items, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power2.out",
+        stagger: 0.08,
+        scrollTrigger: {
+          trigger: group,
+          // Anything already on screen has passed this mark, so the hero plays
+          // as soon as the overlay clears rather than waiting for a scroll.
+          start: "top 85%",
+          once: true,
+        },
+        // Leave no inline transform behind; a stray translate would create a
+        // stacking context under the layered ambient background.
+        onComplete: () => gsap.set(items, { clearProps: "opacity,transform" }),
+      });
+    }
+
+    // Font swap reflows the page after the triggers are measured.
+    document.fonts?.ready.then(() => ScrollTrigger.refresh());
+  };
+
+  // On a return navigation the overlay is display:none'd before paint, so there
+  // is nothing to lift — reveal straight away.
+  const preloader = document.documentElement.classList.contains("no-preloader")
+    ? null
+    : document.getElementById("preloader");
+
+  if (!preloader) {
+    play();
+  } else {
+    // fonts.ready settles even when a face fails to load, and does not wait on
+    // the ambient shader's chunk, so the overlay cannot strand the page.
+    document.fonts.ready.then(() => {
+      gsap.to(preloader, {
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+        onComplete: () => {
+          preloader.remove();
+          play();
+        },
+      });
+    });
   }
 </script>
