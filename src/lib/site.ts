@@ -3,7 +3,7 @@
 export const site = {
   name: "Ravindu Peeris",
   role: "Software developer",
-  positioning: "Software developer. I ship things. They usually don't break. Usually.",
+  positioning: "Software developer. I like building stuff with code.",
   about: [
     "I'm a 4th-year CS undergraduate who learning far better by building things that actually work.",
     "Outside of client work I build my own projects end to end and end up doing random things like designing and editing.",
@@ -14,13 +14,13 @@ export const site = {
   linkedin: "https://www.linkedin.com/in/ravindupeeris/",
   upwork: "https://www.upwork.com/freelancers/~0125d7da76fcef473a?mp_source=share",
   resumeHref: "/resume.pdf",
-  capabilities: {
-    helpWith: "Backend APIs, full-stack web apps, and small automation tools. From a rough idea to something deployed and working.",
-    groups: [
-      { label: "Languages", items: ["TypeScript", "Python", "C/C++"] },
-      { label: "Frameworks", items: ["Next.js", "React", "NestJS", "Node.js"] },
-      { label: "Tools", items: ["MongoDb", "PostgreSQL"] },
-      { label: "Practices", items: ["REST APIs", "CI/CD", "Testing", "Code review"] },
+  // What I'm up to right now. Bump `updated` whenever the items change.
+  now: {
+    updated: "2026-10",
+    items: [
+      { label: "Building", text: "This site, and whatever side project has my attention this month." },
+      { label: "Studying", text: "Final year of my CS degree." },
+      { label: "Into", text: "Design and video editing, when I'm away from the code." },
     ],
   },
 } as const;
