@@ -95,7 +95,7 @@ const personJsonLd = {
         <h2 class="text-ui uppercase text-ink-mute">Now</h2>
         <dl class="mt-4 max-w-(--measure) divide-y divide-rule">
           {site.now.items.map((item) => (
-            <div class="grid gap-1 py-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-6">
+            <div class="grid gap-1 py-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-baseline sm:gap-6">
               <dt class="text-ui uppercase text-ink-mute">{item.label}</dt>
               <dd class="text-body text-ink-soft">{item.text}</dd>
             </div>
