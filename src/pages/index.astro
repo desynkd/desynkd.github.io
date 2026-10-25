@@ -127,9 +127,10 @@ const personJsonLd = {
           <AvailabilityBadge />
         </div>
         <p class="mt-6 max-w-(--measure) text-body text-ink-soft">
-          Reach out at <ObfuscatedEmail /> or find me on the links below.
+          Drop me an email or find me on the links below.
         </p>
         <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-ui uppercase">
+          <ObfuscatedEmail class="text-ink-soft transition-colors duration-200 hover:text-ink" />
           <a href={site.github} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">GitHub</a>
           <a href={site.linkedin} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">LinkedIn</a>
           <a href={site.upwork} target="_blank" rel="noopener noreferrer" class="text-ink-soft transition-colors duration-200 hover:text-ink">Upwork</a>

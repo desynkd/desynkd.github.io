@@ -1,4 +1,6 @@
 ---
+// Mail link whose address is assembled client-side, so it never appears in the
+// markup. Renders a short label ("Email" by default) instead of the address.
 import { site } from "@/lib/site";
 
 interface Props {
@@ -9,12 +11,12 @@ const { user, domain } = site.email;
 ---
 
 <a
-  class:list={["obfuscated-email underline decoration-rule underline-offset-4 hover:decoration-ink", className]}
+  class:list={["obfuscated-email", className]}
   data-user={user}
   data-domain={domain}
   href="#"
 >
-  {user}&#64;{domain}
+  <slot>Email</slot>
 </a>
 
 <script>
