@@ -19,11 +19,6 @@ const posts = (
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 
-const nowUpdated = new Date(`${site.now.updated}-01`).toLocaleDateString("en-US", {
-  month: "short",
-  year: "numeric",
-});
-
 const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -97,12 +92,7 @@ const personJsonLd = {
 
       <!-- Now -->
       <section id="now" class="py-16 sm:py-20">
-        <div class="flex items-baseline justify-between">
-          <h2 class="text-ui uppercase text-ink-mute">Now</h2>
-          <time datetime={site.now.updated} class="text-caption uppercase text-ink-mute">
-            Updated {nowUpdated}
-          </time>
-        </div>
+        <h2 class="text-ui uppercase text-ink-mute">Now</h2>
         <dl class="mt-4 max-w-(--measure) divide-y divide-rule">
           {site.now.items.map((item) => (
             <div class="grid gap-1 py-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-6">

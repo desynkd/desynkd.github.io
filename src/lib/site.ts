@@ -14,13 +14,13 @@ export const site = {
   linkedin: "https://www.linkedin.com/in/ravindupeeris/",
   upwork: "https://www.upwork.com/freelancers/~0125d7da76fcef473a?mp_source=share",
   resumeHref: "/resume.pdf",
-  // What I'm up to right now. Bump `updated` whenever the items change.
+  // What I'm up to right now.
   now: {
-    updated: "2026-10",
     items: [
-      { label: "Building", text: "This site, and whatever side project has my attention this month." },
-      { label: "Studying", text: "Final year of my CS degree." },
-      { label: "Into", text: "Design and video editing, when I'm away from the code." },
+      { label: "Apps", text: "A bunch of mobile apps built for my own oddly specific needs." },
+      { label: "Web", text: "A fintech web app that's slowly turning into a full-on ERP." },
+      { label: "Games", text: "Playing them, and lately trying my hand at making them." },
+      { label: "Off-code", text: "Branding, design and video editing when I'm not coding." },
     ],
   },
 } as const;
