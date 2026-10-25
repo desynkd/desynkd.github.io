@@ -17,7 +17,7 @@ export const site = {
   // What I'm up to right now.
   now: {
     items: [
-      { label: "Building", text: "A growing collection of mobile apps under prjkt studios, plus a web app I'm keeping under wraps for now." },
+      { label: "Lately", text: "Putting out mobile apps through prjkt studios and quietly working on a bigger web thing." },
       { label: "Games", text: "Playing them, and lately trying my hand at making them." },
       { label: "Off-code", text: "Branding, design and video editing when I'm not coding." },
     ],
