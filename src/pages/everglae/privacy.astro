@@ -2,7 +2,7 @@
 // Standalone on purpose: this page carries Everglae's own branding and must
 // read without JavaScript, so it skips the portfolio layout (preloader, shader,
 // reveal script, footer) and its global stylesheet.
-import { privacy, CONTACT, PUBLISHER } from "@/data/everglae-legal";
+import { privacy, CONTACT, DEVELOPER, PUBLISHER } from "@/data/everglae-legal";
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const description =
@@ -73,7 +73,7 @@ const description =
       <p>
         <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
       </p>
-      <p>© {PUBLISHER}</p>
+      <p>© {DEVELOPER} ({PUBLISHER})</p>
     </footer>
   </body>
 </html>
