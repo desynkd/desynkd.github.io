@@ -86,7 +86,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
   // Long-form prose reveals as a single block; staggering every paragraph of
   // an article reads as busy rather than considered.
-  const BLOCK = ".article, .prose-project";
+  const BLOCK = ".post, .prose-project";
   const SKIP = new Set(["SCRIPT", "STYLE", "TEMPLATE", "LINK", "META"]);
 
   // A wrapper is transparent scaffolding — a card grid, a divided list, a chip

@@ -14,6 +14,7 @@ draft: true
     display: block;
     width: 100%;
     aspect-ratio: 16 / 7;
+    min-height: 13rem;          /* phones: don't let the ratio squash it */
     image-rendering: pixelated;
     cursor: crosshair;
   }
@@ -29,7 +30,7 @@ draft: true
     text-transform: uppercase;
     color: var(--color-ink-mute);
   }
-  .dither-stage label { display: flex; align-items: center; gap: 0.75rem; }
+  .dither-stage label { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
   .dither-stage input[type="range"] { accent-color: var(--color-ink); }
 </style>
 
@@ -59,12 +60,12 @@ draft: true
 
 <figure>
   <img src="/favicon.svg" alt="The site's logo mark">
-  <figcaption>A default figure. On desktop it floats into the rail beside the prose; on mobile it collects at the end of the post.</figcaption>
+  <figcaption>A default figure. On desktop it floats into the rail beside the prose; on smaller screens it sits in the text where it is written.</figcaption>
 </figure>
 
 <p>A default <code>&lt;figure&gt;</code> sits in the right-hand rail on wide screens, so the text keeps flowing beside it. That suits screenshots and supporting images that you can glance at without losing your place. Consecutive figures stack in the rail rather than overlapping.</p>
 
-<p>When an image <em>is</em> the point, add <code>class="wide"</code>. A wide figure spans the full article width, starts below any floated figure, and stays exactly where it is in the text on mobile.</p>
+<p>When an image <em>is</em> the point, add <code>class="wide"</code>. A wide figure spans the full article width and starts below any floated figure.</p>
 
 <figure class="wide">
   <img src="/favicon.svg" alt="The site's logo mark, shown wide" style="max-height: 12rem; object-fit: contain; background: var(--color-paper-raised);">

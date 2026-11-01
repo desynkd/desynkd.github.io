@@ -10,25 +10,17 @@
 
 @layer components {
   .post {
-    display: flex;
-    flex-direction: column;
     overflow-wrap: break-word;   /* long URLs and inline code wrap on phones */
   }
 
-  /* Margins, not gap — so the mobile flex rhythm matches the desktop block rhythm. */
   .post > * { margin: 0 0 1.25rem; }
   .post > h2 { margin-top: 2.5rem; }
   .post > h3 { margin-top: 1.75rem; }
 
-  .post > figure {
-    order: 1;          /* mobile: collect at the end, in source order */
-    margin: 0 0 2rem;
-  }
-
-  /* Wide figures and stages are part of the argument — they stay in place. */
-  .post > figure.wide,
+  /* Below the rail breakpoint every figure stays where it is written, next to
+     the text that talks about it. */
+  .post > figure,
   .post > .stage {
-    order: 0;
     margin: 0.75rem 0 2rem;
   }
 
@@ -39,6 +31,7 @@
       font-family: var(--font-sans);
       font-weight: 600;
       letter-spacing: -0.02em;
+      line-height: 1.25;   /* not the prose's 1.85 — wrapped headings read as one */
       color: var(--color-ink);
     }
     h2 { font-size: 1.5rem; }
@@ -117,7 +110,7 @@
   }
 
   @media (min-width: 1024px) {
-    .post { display: block; max-width: var(--container-article); }
+    .post { max-width: var(--container-article); }
 
     /* Prose is capped, so it never reaches the float. */
     .post > *:not(figure, .stage) { max-width: var(--measure); }
