@@ -26,6 +26,9 @@ pnpm-debug.log*
 # local planning docs (not published)
 docs/
 
+# Playwright MCP snapshots and screenshots
+.playwright-mcp/
+
 # assets mirrored out of R2 at build time (R2 is the source of truth)
 public/images/
 public/resume.pdf
