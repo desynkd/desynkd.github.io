@@ -9,7 +9,13 @@ const { title, description, date, tags } = post.data;
 const dateFormatted = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 ---
 
-<a href={`/blog/${post.id}`} class="group -mx-6 block cursor-pointer rounded-(--radius-card) px-6 py-5 transition-colors duration-200 hover:bg-[#d2d2d0]">
+<a href={`/blog/${post.id}`} class="group relative isolate block cursor-pointer py-5">
+  <!-- The hover fill lives on its own layer: lists divide cards with a border,
+       and on a rounded element that border bends up at both ends. -->
+  <span
+    aria-hidden="true"
+    class="absolute inset-y-0 -inset-x-6 -z-10 rounded-(--radius-card) transition-colors duration-200 group-hover:bg-[#d2d2d0]"
+  ></span>
   <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
     <h3 class="text-[1.0625rem] font-medium text-ink transition-colors duration-200 group-hover:text-ink-soft">
       {title}

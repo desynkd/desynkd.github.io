@@ -4,11 +4,11 @@
 // The bucket has no public access, so browsers cannot fetch `<img>` sources or
 // download links from it directly — every request would need signing. Instead
 // the build downloads `<prefix>/images/**` to `public/images/**`,
-// `<prefix>/files/**` to `public/files/**` and `<prefix>/resume.pdf` to
-// `public/resume.pdf`, and markdown refers to them by site-absolute path:
+// `<prefix>/media/**` to `public/media/**` and `<prefix>/resume.pdf` to
+// `public/resume.pdf`, and pages refer to them by site-absolute path:
 //
-//     ![A diagram](/images/pipeline.png "Optional caption")
-//     [Sample vault](/files/chicago-sample-vault.zip)
+//     <img src="/images/pipeline.png">                  shared across posts
+//     <img src="/media/obsidian-plugin/dashboard.png">  belongs to one post
 //
 // All three destinations are gitignored — R2 is the source of truth, the repo
 // just caches a copy at build time.
@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 import { getObjectBytes, listObjects, objectExists, objectKey } from "../lib/r2";
 
 const IMAGES_DIR = "images";
-const FILES_DIR = "files";
+const MEDIA_DIR = "media";
 const RESUME_KEY = "resume.pdf";
 
 /**
@@ -75,7 +75,7 @@ export default function r2Assets(): AstroIntegration {
         const log = (message: string) => logger.info(message);
 
         await syncDir(IMAGES_DIR, publicDir, log);
-        await syncDir(FILES_DIR, publicDir, log);
+        await syncDir(MEDIA_DIR, publicDir, log);
         await syncResume(publicDir, log);
       },
     },

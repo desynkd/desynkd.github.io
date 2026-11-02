@@ -1,0 +1,150 @@
+---
+title: Style Reference
+description: Every piece of the shared post styles in one place — a living style guide and a template to copy from.
+date: 2026-11-01
+tags:
+  - meta
+draft: true
+---
+<style>
+  /* Post-level styles are fenced into the post by the build, so bare element
+     selectors are safe here. Inside .stage, anything goes. */
+  .dither-stage { display: grid; }
+  .dither-stage canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    min-height: 13rem;          /* phones: don't let the ratio squash it */
+    image-rendering: pixelated;
+    cursor: crosshair;
+  }
+  .dither-stage .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--color-rule);
+    font-size: var(--text-ui);
+    letter-spacing: var(--text-ui--letter-spacing);
+    text-transform: uppercase;
+    color: var(--color-ink-mute);
+  }
+  .dither-stage label { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+  .dither-stage input[type="range"] { accent-color: var(--color-ink); }
+</style>
+
+<p>This post is a <strong>draft</strong>, so it only exists in <code>npm run dev</code>. It shows every part of the shared post styles, and its source is the quickest template for a new post. Prose like this paragraph is set in the serif at a comfortable measure; links look <a href="/blog">like this</a>, and <em>emphasis</em> and <strong>strong</strong> work as usual.</p>
+
+<h2>Headings and lists</h2>
+
+<p>Use <code>&lt;h2&gt;</code> for sections and <code>&lt;h3&gt;</code> below them. The post title is the page's <code>&lt;h1&gt;</code>, so never add another.</p>
+
+<h3>A smaller heading</h3>
+
+<ul>
+  <li>Unordered lists get discs.</li>
+  <li>Each item has a little breathing room.</li>
+</ul>
+
+<ol>
+  <li>Ordered lists count.</li>
+  <li>Like this.</li>
+</ol>
+
+<blockquote>
+  <p>A blockquote, for when someone else said it better.</p>
+</blockquote>
+
+<h2>Figures</h2>
+
+<figure>
+  <img src="/favicon.svg" alt="The site's logo mark">
+  <figcaption>A default figure. It sits in the text where it is written, as wide as the prose.</figcaption>
+</figure>
+
+<p>A default <code>&lt;figure&gt;</code> works like an image in Markdown: it sits between the paragraphs around it and fills the reading column.</p>
+
+<p>When an image needs more room, add <code>class="wide"</code>. A wide figure spans the full article width.</p>
+
+<figure class="wide">
+  <img src="/favicon.svg" alt="The site's logo mark, shown wide" style="max-height: 12rem; object-fit: contain; background: var(--color-paper-raised);">
+  <figcaption>A wide figure, spanning the article.</figcaption>
+</figure>
+
+<h2>Callouts</h2>
+
+<div class="callout">
+  <p><strong>Note.</strong> A callout sets an aside apart from the prose — a caveat, a tip, a tangent. It can hold several paragraphs and inline <code>code</code>.</p>
+</div>
+
+<h2>Code</h2>
+
+<p>Write a code block as <code>&lt;pre&gt;&lt;code class="language-…"&gt;</code>. The build highlights it with the site's monochrome theme and strips the indentation it inherits from the surrounding HTML. Escape <code>&lt;</code> and <code>&amp;</code> inside it.</p>
+
+<pre><code class="language-ts">
+  export function readingTime(words: number): number {
+    // 200 words a minute, never less than one.
+    return Math.max(1, Math.round(words / 200));
+  }
+</code></pre>
+
+<h2>Stages</h2>
+
+<p>A <code>.stage</code> is a full-width frame for anything interactive — a canvas, a demo, a diagram. The frame comes from the shared styles; everything inside it is the post's own. The one below is an ordered dither, coloured from the site's tokens. Move the pointer across it.</p>
+
+<div class="stage dither-stage" id="style-reference-dither">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cell size <input type="range" min="2" max="12" value="5" data-cell></label>
+    <span data-readout></span>
+  </div>
+</div>
+
+<script type="module">
+  // Scripts run as written. Find your own elements by a slug-prefixed id —
+  // never reach for document.querySelector("canvas") and the like.
+  const stage = document.getElementById("style-reference-dither");
+  const canvas = stage.querySelector("canvas");
+  const slider = stage.querySelector("[data-cell]");
+  const readout = stage.querySelector("[data-readout]");
+  const ctx = canvas.getContext("2d");
+
+  const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const ink = token("--color-ink");
+  const paper = token("--color-paper-raised");
+
+  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+  let pointer = { x: 0.3, y: 0.5 };
+
+  function draw() {
+    const cell = Number(slider.value);
+    const cols = Math.ceil(canvas.clientWidth / cell);
+    const rows = Math.ceil(canvas.clientHeight / cell);
+    canvas.width = cols;
+    canvas.height = rows;
+
+    ctx.fillStyle = paper;
+    ctx.fillRect(0, 0, cols, rows);
+    ctx.fillStyle = ink;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const dx = x / cols - pointer.x;
+        const dy = (y / rows - pointer.y) * (rows / cols);
+        const shade = Math.min(1, Math.hypot(dx, dy) * 2.2);
+        if (1 - shade > bayer[(y % 4) * 4 + (x % 4)]) ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    readout.textContent = `${cols} × ${rows} cells`;
+  }
+
+  canvas.addEventListener("pointermove", (event) => {
+    const rect = canvas.getBoundingClientRect();
+    pointer = { x: (event.clientX - rect.left) / rect.width, y: (event.clientY - rect.top) / rect.height };
+    requestAnimationFrame(draw);
+  });
+  slider.addEventListener("input", draw);
+  new ResizeObserver(draw).observe(canvas);
+</script>
+
+<p>Need a library? Import it from a CDN at an exact version, the way an artifact would — for example <code>import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.183.2/+esm"</code>.</p>

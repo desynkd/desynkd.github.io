@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Blog posts are HTML in a content folder Tailwind does not detect on its own;
+   register it so posts can use utilities. */
+@source "../content/blog";
+
 @custom-variant dark (&:is(.dark *));
 
 /* Self-hosted fonts — no Google Fonts CDN request, no third-party dependency. */
@@ -75,7 +79,6 @@
   --container-shell:   79rem;
   --container-article: 61rem;
   --measure:            38rem;
-  --rail:               20rem;  /* article image rail */
   --nav-rail:           14rem;  /* landing side-nav column */
   --gutter:             1.5rem; /* page side padding — steps up at sm/lg below */
 
@@ -185,18 +188,19 @@
 	--sidebar-border: var(--color-rule);
 	--sidebar-ring: var(--color-ink-mute);
 
-	/* Shiki (theme: 'css-variables') mapped to the monochrome palette. */
-	--shiki-color-text: var(--color-ink);
-	--shiki-color-background: var(--color-paper-raised);
-	--shiki-token-constant: var(--color-ink);
-	--shiki-token-string: var(--color-ink-soft);
-	--shiki-token-comment: var(--color-ink-mute);
-	--shiki-token-keyword: var(--color-ink);
-	--shiki-token-parameter: var(--color-ink-soft);
-	--shiki-token-function: var(--color-ink);
-	--shiki-token-string-expression: var(--color-ink-soft);
-	--shiki-token-punctuation: var(--color-ink-mute);
-	--shiki-token-link: var(--color-ink);
+	/* Shiki (theme: 'css-variables') mapped to the monochrome palette. Astro's
+	   markdown and the HTML post pipeline both emit the --astro-code- prefix. */
+	--astro-code-foreground: var(--color-ink);
+	--astro-code-background: var(--color-paper-raised);
+	--astro-code-token-constant: var(--color-ink);
+	--astro-code-token-string: var(--color-ink-soft);
+	--astro-code-token-comment: var(--color-ink-mute);
+	--astro-code-token-keyword: var(--color-ink);
+	--astro-code-token-parameter: var(--color-ink-soft);
+	--astro-code-token-function: var(--color-ink);
+	--astro-code-token-string-expression: var(--color-ink-soft);
+	--astro-code-token-punctuation: var(--color-ink-mute);
+	--astro-code-token-link: var(--color-ink);
 }
 
 /* Responsive page gutter. Declared as a token so `px-(--gutter)` in Container.astro

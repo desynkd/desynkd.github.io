@@ -1,18 +1,17 @@
 import { defineCollection, z } from 'astro:content';
+import { htmlLoader } from '@/loaders/html';
 import { r2Loader } from '@/loaders/r2';
 
 const blog = defineCollection({
-  loader: r2Loader({ dir: 'blog' }),
+  loader: htmlLoader({ base: 'src/content/blog' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),          // list previews + meta/OG
     date: z.coerce.date(),
     updated: z.coerce.date().optional(),
+    image: z.string().optional(),     // link preview, 1200×630
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
-    series: z.object({ name: z.string(), order: z.number() }).optional(),
-    // Site-absolute path to an image synced out of R2, e.g. "/images/cover.png".
-    cover: z.string().optional(),
   }),
 });
 
