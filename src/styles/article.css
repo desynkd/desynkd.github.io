@@ -17,8 +17,7 @@
   .post > h2 { margin-top: 2.5rem; }
   .post > h3 { margin-top: 1.75rem; }
 
-  /* Below the rail breakpoint every figure stays where it is written, next to
-     the text that talks about it. */
+  /* Figures sit in the flow where they are written, like images in Markdown. */
   .post > figure,
   .post > .stage {
     margin: 0.75rem 0 2rem;
@@ -112,21 +111,8 @@
   @media (min-width: 1024px) {
     .post { max-width: var(--container-article); }
 
-    /* Prose is capped, so it never reaches the float. */
-    .post > *:not(figure, .stage) { max-width: var(--measure); }
-
-    .post > figure:not(.wide) {
-      float: right;
-      clear: right;              /* consecutive figures stack, never overlap */
-      width: var(--rail);
-      margin: 0.375rem 0 2rem 3rem;
-    }
-
-    /* Full-width blocks start below any floated figure. */
-    .post > figure.wide,
-    .post > .stage { clear: both; }
-
-    /* Floats must not escape the article. */
-    .post::after { content: ""; display: block; clear: both; }
+    /* Prose and default figures share the reading column; .wide figures and
+       stages span the full article. */
+    .post > *:not(figure.wide, .stage) { max-width: var(--measure); }
   }
 }

@@ -37,7 +37,7 @@ prose styles. Plain HTML already looks right:
 
 | Want | Write |
 | --- | --- |
-| Image or video beside the text (right-hand rail on desktop, in the text on smaller screens) | `<figure><img src="…" alt="…"><figcaption>…</figcaption></figure>` |
+| Image or video in the text, where it is written (like an image in Markdown) | `<figure><img src="…" alt="…"><figcaption>…</figcaption></figure>` |
 | Image that spans the full article width | `<figure class="wide">…</figure>` |
 | An aside, tip or caveat | `<div class="callout"><p>…</p></div>` |
 | Highlighted code | `<pre><code class="language-ts">…</code></pre>` |

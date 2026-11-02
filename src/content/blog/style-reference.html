@@ -60,12 +60,12 @@ draft: true
 
 <figure>
   <img src="/favicon.svg" alt="The site's logo mark">
-  <figcaption>A default figure. On desktop it floats into the rail beside the prose; on smaller screens it sits in the text where it is written.</figcaption>
+  <figcaption>A default figure. It sits in the text where it is written, as wide as the prose.</figcaption>
 </figure>
 
-<p>A default <code>&lt;figure&gt;</code> sits in the right-hand rail on wide screens, so the text keeps flowing beside it. That suits screenshots and supporting images that you can glance at without losing your place. Consecutive figures stack in the rail rather than overlapping.</p>
+<p>A default <code>&lt;figure&gt;</code> works like an image in Markdown: it sits between the paragraphs around it and fills the reading column.</p>
 
-<p>When an image <em>is</em> the point, add <code>class="wide"</code>. A wide figure spans the full article width and starts below any floated figure.</p>
+<p>When an image needs more room, add <code>class="wide"</code>. A wide figure spans the full article width.</p>
 
 <figure class="wide">
   <img src="/favicon.svg" alt="The site's logo mark, shown wide" style="max-height: 12rem; object-fit: contain; background: var(--color-paper-raised);">
