@@ -1,0 +1,843 @@
+---
+title: "Side Quest: Designing My First Brand"
+description: How my first attempt at a logo and brand identity, a textbook brand called Trellis, became a finalist at the Phoenix Arts and Design Awards
+date: 2026-11-02
+image: /media/trellis-pad-awards/og.png
+tags:
+  - design
+  - branding
+---
+<style>
+  .trellis-stage { display: grid; }
+  .trellis-stage svg { display: block; width: 100%; height: auto; max-height: 30rem; }
+  .trellis-stage .t-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--color-rule);
+  }
+  /* Same pill as the post's tags: uppercase UI type, silver when active. */
+  .trellis-stage button {
+    font-family: var(--font-sans);
+    font-size: var(--text-ui);
+    letter-spacing: var(--text-ui--letter-spacing);
+    text-transform: uppercase;
+    color: var(--color-ink-mute);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-pill);
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+    transition: color 200ms, background-color 200ms;
+  }
+  .trellis-stage button:hover { color: var(--color-ink-soft); }
+  .trellis-stage button[aria-pressed="true"] { background: var(--color-silver); color: var(--color-ink-soft); }
+  .trellis-stage button:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+  .trellis-stage .t-forms { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.25rem; padding: 0.75rem 1rem 0; border-top: 1px solid var(--color-rule); }
+  .trellis-stage .t-forms button { display: grid; gap: 0.1rem; padding: 0.4rem 0.25rem; border-radius: 1rem; text-align: center; min-width: 0; }
+  .trellis-stage .t-forms b { font-weight: 500; }
+  .trellis-stage .t-forms small { font-size: 0.625rem; text-transform: none; letter-spacing: 0; }
+  .trellis-stage .t-forms + .t-bar { border-top: 0; }
+  @media (max-width: 30rem) {
+    .trellis-stage .t-forms { gap: 0; padding-inline: 0.5rem; }
+    .trellis-stage .t-forms button { padding-inline: 0; letter-spacing: 0; font-size: 0.6875rem; }
+    .trellis-stage .t-forms small { font-size: 0.5625rem; }
+  }
+</style>
+
+<p>I've always had a fascination with logos, but I'd never tried designing an actual logo or brand mark. Then I kept seeing posts promoting the <a href="https://pad.phoenix.lk">Phoenix Arts and Design Awards</a>, the PAD awards run by Phoenix Industries here in Sri Lanka. They had a graphic design category called Brands for Life, where you could compete by submitting a set of branding guidelines. I was interested. I also procrastinated a lot, so for a while I did nothing at all.</p>
+
+<p>Coincidentally, that was around the time my feed started serving me reels of <a href="https://www.instagram.com/allanpeters/">Allan Peters</a>. He's a Minneapolis logo designer who runs Peters Design Company, has worked with brands like Nike, Amazon and Disney, and wrote the book <em>Logos That Last</em>. His videos went viral for walking through how a logo actually gets made, or fixing famous ones, and he uses a lot of physical stuff to show off his logos.</p>
+
+<p>What makes him different is that he treats a logo as a process rather than a stroke of genius. He starts with the subject and the story, picks out the shapes that could work as building blocks, then combines them using things like negative space, overlaps and geometry. He pushes through a big pile of sketches and boils it down to about 15 options for the client. Watching him made me actually want to try logo design, and the PAD awards suddenly sounded like a good side quest.</p>
+
+<h2>The brief: revolution</h2>
+
+<p>The theme was revolution, and the idea was to come up with a brand and build an identity for it. The brand I came up with is Trellis, and it tries to revolutionize how students consume knowledge.</p>
+
+<p>Instead of a yearly textbook that holds slices of many different domains, Trellis gives students a whole domain in a single book. When you have the entire domain in front of you, you can see why learning something matters by skipping ahead and seeing how everything links up. And if you forget something, you can catch up just by going back a level.</p>
+
+<p>That ties in with the name. A trellis is an open framework of crossed bars, slats or wires, made of wood, metal, bamboo or plastic, that supports and guides climbing plants and vines. Knowledge gets something to climb.</p>
+
+<div class="callout">
+  <p>I admit replacing school textbooks with books like this isn't a very practical or realistic idea. But I thought it was an okay foundation to build a brand on.</p>
+</div>
+
+<h2>Winging it with triangles</h2>
+
+<p>I'd like to say I followed the Allan Peters approach to logo making, with the pile of sketches and the 15 options, but I didn't really. I remembered that bridge lattices are made of triangles, because a triangle is the one shape that holds rigid without bending out of form, so I kinda winged it with a design built from triangles.</p>
+
+<p>I also wanted a logo that was flexible and could change forms. I liked the idea that it could fit into any space it gets thrown at and still be easily recognizable, even with multiple forms. So this is what I came up with.</p>
+
+<div class="stage trellis-stage">
+  <div id="pad-orbit-stage"></div>
+  <div class="t-bar">
+    <button type="button" id="pad-orbit-long" aria-pressed="true">Long</button>
+    <button type="button" id="pad-orbit-compact" aria-pressed="false">Compact</button>
+    <button type="button" id="pad-orbit-loop" aria-pressed="true">Loop</button>
+    <button type="button" id="pad-orbit-slow" aria-pressed="false">Half speed</button>
+  </div>
+</div>
+
+<script type="module">
+import gsap from "https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm";
+
+  const COMPACT_SCALE = 0.8627;
+  const LONG_CENTRE = [1400, 359.5];
+  const COMPACT_CENTRE = [727, 721.5];
+  const ORBIT_RADIUS = 620;
+  const HOLD = 1.4;
+
+  // long/compact: the same point on the triangle in each logomark's SVG coordinates.
+  // turn: clockwise rotation from the long layout to the compact one.
+  const triangles = [
+    { name: "seed",   fill: "#F07264", long: [423.355, 493.365],  compact: [384.142, 361.703],   turn: 135, d: "M349.596 43.7877C386.488 -14.5958 471.636 -14.5958 508.527 43.7877L843.438 573.815C882.987 636.406 838.011 718.027 763.972 718.027H683.162C655.825 718.027 639.554 684.438 650.759 659.503C664.407 629.134 672 595.454 672 560.001C672 425.796 563.205 317.001 429 317.001C294.795 317.001 186 425.795 186 560.001C186 595.454 193.592 629.134 207.24 659.503C218.446 684.437 202.174 718.027 174.837 718.027H94.1512C20.1122 718.027 -24.8631 636.406 14.6863 573.815L349.596 43.7877Z" },
+    { name: "shoot",  fill: "#EDAA1B", long: [1081.894, 248.944], compact: [1077.541, 383.481],  turn: 45,  d: "M1155.65 674.239C1118.76 732.623 1033.61 732.623 996.721 674.239L661.811 144.213C622.261 81.622 667.236 0 741.276 0H923.248C958.594 0 987.248 28.6538 987.248 64V319.026C987.248 368.18 1027.09 408.026 1076.25 408.026C1125.4 408.026 1165.25 368.18 1165.25 319.026V64C1165.25 28.6538 1193.9 0 1229.25 0H1411.1C1485.14 6.10352e-05 1530.11 81.622 1490.56 144.213L1155.65 674.239Z" },
+    { name: "branch", fill: "#41A974", long: [1716.086, 438.268], compact: [1050.854, 1048.611], turn: 315, calm: 405, d: "M1643.84 43.7883C1680.74 -14.5955 1765.88 -14.5955 1802.78 43.7883L2137.69 573.815C2177.24 636.406 2132.26 718.027 2058.22 718.027C2040.84 718.027 2024.68 709.126 2015.38 694.443L1802.74 358.504C1765.83 300.205 1680.79 300.206 1643.89 358.505L1431.24 694.442C1421.95 709.126 1405.78 718.027 1388.4 718.027C1314.36 718.026 1269.38 636.405 1308.93 573.815L1643.84 43.7883Z" },
+    { name: "canopy", fill: "#3E99C6", long: [2375.754, 258.570], compact: [382.567, 1053.885],  turn: 225, d: "M2449.9 674.239C2413.01 732.623 2327.86 732.623 2290.97 674.239L1956.06 144.212C1916.51 81.6215 1961.49 0.000488281 2035.52 0.000488281H2114.2C2146.54 0.000488281 2173.8 24.1201 2177.73 56.2156L2210.36 322.462C2216.13 369.603 2256.17 405.029 2303.66 405.029H2437.29C2484.78 405.029 2524.82 369.603 2530.59 322.463L2563.22 56.2156C2567.16 24.1202 2594.41 0.000488281 2626.75 0.000488281H2705.35C2779.39 0.000549316 2824.36 81.6216 2784.81 144.212L2449.9 674.239Z" },
+  ];
+
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const smooth = (u) => u * u * (3 - 2 * u);
+  const flow = (p) => (1 - Math.cos(Math.PI * p)) / 2;
+  const toAngle = (y, x) => ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  const rad = (a) => (a * Math.PI) / 180;
+  const vec = (angle, r) => [r * Math.cos(rad(angle)), r * Math.sin(rad(angle))];
+
+  // Clockwise distance from one angle to another, at least `min` degrees.
+  function forward(from, to, min) {
+    let delta = (((to - from) % 360) + 360) % 360;
+    while (delta < min) delta += 360;
+    return delta;
+  }
+  // The clockwise rotation that ends at the right heading and is closest to `near`.
+  function headingNear(base, near, least = 0) {
+    const start = ((base % 360) + 360) % 360;
+    let spin = start + 360 * Math.max(0, Math.round((near - start) / 360));
+    while (spin < least) spin += 360;
+    return spin;
+  }
+
+  // How long each flight takes, and the softest point on the ring's speed curve to change phase.
+  const SECONDS = { long: 4.8, compact: 4.4 };
+  const quintic = (u) => { const v = Math.min(1, Math.max(0, u)); return v * v * v * (v * (6 * v - 15) + 10); };
+
+  // Everything follows one speed curve: a slow rise, a steady cruise and a long, soft landing.
+  // Progress is its running total, so speed and acceleration both change without any step.
+  const STEPS = 480;
+  const progress = new Float64Array(STEPS + 1);
+  for (let i = 1; i <= STEPS; i++) {
+    const p = (i - 0.5) / STEPS;
+    progress[i] = progress[i - 1] + quintic(p / 0.3) * quintic((1 - p) / 0.45);
+  }
+  const fullRun = progress[STEPS];
+  function travelled(p) {
+    const at = Math.min(STEPS, p * STEPS), i = Math.min(STEPS - 1, Math.floor(at));
+    return lerp(progress[i], progress[i + 1], at - i) / fullRun;
+  }
+
+  for (const t of triangles) {
+    t.l = [t.long[0] - LONG_CENTRE[0], t.long[1] - LONG_CENTRE[1]];
+    t.c = [t.compact[0] - COMPACT_CENTRE[0], t.compact[1] - COMPACT_CENTRE[1]];
+    t.lAngle = toAngle(t.l[1], t.l[0]);
+    t.lRadius = Math.hypot(...t.l);
+    t.cAngle = toAngle(t.c[1], t.c[0]);
+    t.cRadius = Math.hypot(...t.c);
+  }
+
+  // Values that every option shares for one triangle flying to `target`.
+  function ends(t, target) {
+    const toLong = target === "long";
+    return {
+      toLong,
+      a0: toLong ? t.cAngle : t.lAngle,
+      a1: toLong ? t.lAngle : t.cAngle,
+      r0: toLong ? t.cRadius : t.lRadius,
+      r1: toLong ? t.lRadius : t.cRadius,
+      s0: toLong ? COMPACT_SCALE : 1,
+      s1: toLong ? 1 : COMPACT_SCALE,
+      h0: toLong ? t.turn : 0,
+      hBase: toLong ? 360 - t.turn : t.turn,
+    };
+  }
+
+  // Returns (p) => [x, y, heading, scale] for one triangle, relative to the stage centre.
+  function spiralPath(t, target) {
+    const e = ends(t, target);
+    const least = e.toLong ? 540 : 240;
+    const shared = triangles.reduce((sum, o) => { const x = ends(o, target); return sum + forward(x.a0, x.a1, least); }, 0) / triangles.length;
+    const drift = forward(e.a0, e.a1, least) - shared;
+    // Branch overtakes Canopy on the inside, so it turns less and earlier than the rest. Otherwise it reads as spinning on the spot.
+    const calm = e.toLong && t.calm;
+    // Going the other way Branch needs the least rotation, so it spreads that over most of the
+    // flight and reaches the ring early. Packed into the gathering phase, it looks parked.
+    const early = !e.toLong && Boolean(t.calm);
+    const twist = (calm || headingNear(e.hBase, shared)) - shared;
+    return (p) => {
+      const g = travelled(p);
+      // Compact to long: the ring opens and winds up, then breaks off into the row.
+      // Long to compact: the row gathers onto the ring, then the ring turns and closes.
+      const change = e.toLong ? quintic((g - 0.5) / 0.5) : quintic(g / 0.6);
+      const spreadOut = early ? quintic(g / 0.85) : change;
+      const r = e.toLong
+        ? lerp(lerp(e.r0, ORBIT_RADIUS, quintic(g / 0.45)), e.r1, change)
+        : lerp(lerp(e.r0, ORBIT_RADIUS, early ? quintic(g / 0.4) : change), e.r1, quintic((g - 0.6) / 0.4));
+      const settle = calm ? quintic((g - 0.3) / 0.7) : spreadOut;
+      return [...vec(e.a0 + shared * g + drift * spreadOut, r), e.h0 + shared * g + twist * settle, lerp(e.s0, e.s1, change)];
+    };
+  }
+
+  // Each triangle's own radius lane: outward or inward offsets, one row per triangle in the order
+  // above, solved against the real outlines so no two shapes touch. They change radius only.
+  const LANE_POINTS = 7;
+  const LANES = {
+    long: [
+      [0, 0, 0, 62, 69, 7, -27],
+      [0, 0, 0, -7, -14, -7, 0],
+      [0, 0, 0, -39, -30, 18, -5],
+      [0, 0, 0, 112, 100, 18, -26],
+    ],
+    compact: [
+      [7, 41, 62, 34, 0, 0, 0],
+      [-14, -27, -27, -14, 0, 0, 0],
+      [153, 32, -106, -53, 0, 0, 0],
+      [55, 213, 227, 124, 0, 0, 0],
+    ],
+  };
+
+  function laneOffset(weights, p) {
+    const edge = quintic(p / 0.14) * quintic((1 - p) / 0.14);
+    let total = 0;
+    weights.forEach((weight, j) => {
+      const distance = Math.abs(p - (j + 1) / (LANE_POINTS + 1)) / (2 / (LANE_POINTS + 1));
+      if (distance < 1) total += weight * (0.5 + 0.5 * Math.cos(Math.PI * distance));
+    });
+    return total * edge;
+  }
+  // Moves a triangle along its own radius without touching its angle, heading or scale.
+  const inLane = (path, weights) => (p) => {
+    const [x, y, heading, scale] = path(p);
+    const k = (Math.hypot(x, y) + laneOffset(weights, p)) / Math.hypot(x, y);
+    return [x * k, y * k, heading, scale];
+  };
+
+  const stage = document.getElementById("pad-orbit-stage");
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "-260 -1240 3320 3400");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Trellis logomark moving between its long and compact layouts");
+  const pieces = triangles.map((t, i) => {
+    const path = document.createElementNS(NS, "path");
+    path.setAttribute("d", t.d);
+    path.setAttribute("fill", t.fill);
+    svg.append(path);
+    return {
+      el: path,
+      anchor: t.long,
+      long: inLane(spiralPath(t, "long"), LANES.long[i]),
+      compact: inLane(spiralPath(t, "compact"), LANES.compact[i]),
+    };
+  });
+  stage.append(svg);
+
+  function draw(target, seconds) {
+    const p = Math.min(1, seconds / SECONDS[target]);
+    for (const piece of pieces) {
+      const [x, y, heading, scale] = piece[target](p);
+      piece.el.setAttribute(
+        "transform",
+        `translate(${LONG_CENTRE[0] + x} ${LONG_CENTRE[1] + y}) rotate(${heading}) scale(${scale}) translate(${-piece.anchor[0]} ${-piece.anchor[1]})`
+      );
+    }
+  }
+
+  const buttons = {
+    long: document.getElementById("pad-orbit-long"),
+    compact: document.getElementById("pad-orbit-compact"),
+    loop: document.getElementById("pad-orbit-loop"),
+    slow: document.getElementById("pad-orbit-slow"),
+  };
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let layout = "long";
+  let flying = false;
+  let queued = null;
+  let looping = !reduced;
+  let holdCall = null;
+  let flight = null;
+  let speed = 1;
+
+  function showLayout(name) {
+    buttons.long.setAttribute("aria-pressed", String(name === "long"));
+    buttons.compact.setAttribute("aria-pressed", String(name === "compact"));
+  }
+
+  function fly(target) {
+    if (reduced) {
+      layout = target;
+      draw(target, Infinity);
+      showLayout(target);
+      return;
+    }
+    flying = true;
+    showLayout(target);
+    const clock = { seconds: 0 };
+    flight = gsap.to(clock, {
+      seconds: SECONDS[target],
+      duration: SECONDS[target],
+      ease: "none",
+      onUpdate: () => draw(target, clock.seconds),
+      onComplete: () => {
+        flying = false;
+        layout = target;
+        const next = queued;
+        queued = null;
+        if (next && next !== layout) fly(next);
+        else scheduleLoop();
+      },
+    }).timeScale(speed);
+  }
+
+  function scheduleLoop() {
+    holdCall?.kill();
+    if (looping) holdCall = gsap.delayedCall(HOLD, () => fly(layout === "long" ? "compact" : "long"));
+  }
+
+  function choose(target) {
+    looping = false;
+    buttons.loop.setAttribute("aria-pressed", "false");
+    holdCall?.kill();
+    if (flying) queued = target;
+    else if (target !== layout) fly(target);
+  }
+
+  buttons.long.addEventListener("click", () => choose("long"));
+  buttons.compact.addEventListener("click", () => choose("compact"));
+  buttons.loop.addEventListener("click", () => {
+    looping = !looping;
+    buttons.loop.setAttribute("aria-pressed", String(looping));
+    holdCall?.kill();
+    if (looping && !flying) scheduleLoop();
+  });
+  buttons.slow.addEventListener("click", () => {
+    speed = speed === 1 ? 0.5 : 1;
+    buttons.slow.setAttribute("aria-pressed", String(speed === 0.5));
+    flight?.timeScale(speed);
+  });
+
+  draw("long", Infinity);
+  buttons.loop.setAttribute("aria-pressed", String(looping));
+  if (typeof gsap !== "undefined") scheduleLoop();
+
+</script>
+
+<h2>Four triangles, four levels</h2>
+
+<p>If you look at the logomark, you'll notice the triangles that make it up are all different from each other. That's because Trellis takes a domain and divides it into four levels.</p>
+
+<p>The first level is called <strong>Seed</strong>. It's introductory and entry level. The next is <strong>Shoot</strong>, where the knowledge from Seed is expanded further. Two more follow, <strong>Branch</strong> and then <strong>Canopy</strong>, which is the highest level. Each element in the logo stands for one of these levels, and each gets its own colour.</p>
+
+<div class="stage trellis-stage">
+  <div id="pad-gather-stage"></div>
+  <div class="t-bar">
+    <button type="button" id="pad-gather-replay">Replay</button>
+    <button type="button" id="pad-gather-loop" aria-pressed="true">Loop</button>
+    <button type="button" id="pad-gather-slow" aria-pressed="false">Half speed</button>
+  </div>
+</div>
+
+<script type="module">
+import gsap from "https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm";
+
+// Shared motion for animation 3. Pasted into the page by rise-build.js and loaded by rise-check.js.
+const COMPACT_SCALE = 0.8627;
+const COMPACT_CENTRE = [727, 721.5];
+const lerp = (a, b, u) => a + (b - a) * u;
+const quintic = (u) => { const v = Math.min(1, Math.max(0, u)); return v * v * v * (v * (6 * v - 15) + 10); };
+const rad = (a) => (a * Math.PI) / 180;
+const spin = ([x, y], a) => [x * Math.cos(rad(a)) - y * Math.sin(rad(a)), x * Math.sin(rad(a)) + y * Math.cos(rad(a))];
+
+// Slow turn, fast turn, in seconds. The last fast turn eases all the way to rest.
+const BEATS = { first: 2.6, fast: 1.5, slow: 1.5, last: 2.6 };
+const FAST_AT = [BEATS.first, BEATS.first + BEATS.fast + BEATS.slow, BEATS.first + 2 * (BEATS.fast + BEATS.slow)];
+const RUN = FAST_AT[2] + BEATS.last;
+const SLOW_SPEED = 38;
+const RAMP = 0.55;
+
+// One speed curve for the whole run. Rotation is its running total, so speed never steps.
+function speedShape(t, fast) {
+  const pulse = (at) => quintic((t - at + RAMP / 2) / RAMP) * quintic((at + BEATS.fast + RAMP / 2 - t) / RAMP);
+  const lastPulse = quintic((t - FAST_AT[2] + RAMP / 2) / RAMP);
+  const rest = quintic((RUN - t) / (BEATS.last * 0.72));
+  const level = Math.max(pulse(FAST_AT[0]), pulse(FAST_AT[1]), lastPulse);
+  const wake = quintic((t - 0.6) / 1.1); // Seed sits still and upright first
+  return lerp(SLOW_SPEED, fast, level) * rest * wake;
+}
+const STEPS = 1200;
+function total(fast) {
+  const table = new Float64Array(STEPS + 1);
+  for (let i = 1; i <= STEPS; i++) table[i] = table[i - 1] + (speedShape(((i - 0.5) / STEPS) * RUN, fast) * RUN) / STEPS;
+  return table;
+}
+// The frame starts where Seed reads upright and stops on whole turns, at the compact angles.
+const TURNS = 5;
+const START_ANGLE = -75;
+const END_ANGLE = 360 * TURNS - START_ANGLE;
+const FAST_SPEED = (() => {
+  let low = SLOW_SPEED, high = 3000;
+  for (let i = 0; i < 40; i++) {
+    const mid = (low + high) / 2;
+    if (total(mid)[STEPS] < END_ANGLE) low = mid; else high = mid;
+  }
+  return (low + high) / 2;
+})();
+const turned = total(FAST_SPEED);
+function frameAngle(t) {
+  const at = Math.min(STEPS, Math.max(0, (t / RUN) * STEPS)), i = Math.min(STEPS - 1, Math.floor(at));
+  return START_ANGLE + lerp(turned[i], turned[i + 1], at - i) + outAngle(t);
+}
+
+// The way back: after a hold the mark gears up as one, Shoot, Branch and Canopy leave together, and
+// Seed settles on the centre, upright and still, which is the frame the run starts from.
+const HOLD = 1.8, OUT = 3.2, OUT_AT = RUN + HOLD, LOOP = OUT_AT + OUT;
+const OUT_TURN = 585; // Seed's 135 plus this is a whole number of turns
+const outTurned = new Float64Array(STEPS + 1);
+for (let i = 1; i <= STEPS; i++) {
+  const p = (i - 0.5) / STEPS;
+  outTurned[i] = outTurned[i - 1] + quintic(p / 0.3) * quintic((1 - p) / 0.6);
+}
+function outAngle(t) {
+  const at = Math.min(STEPS, Math.max(0, ((t - OUT_AT) / OUT) * STEPS)), i = Math.min(STEPS - 1, Math.floor(at));
+  return (OUT_TURN * lerp(outTurned[i], outTurned[i + 1], at - i)) / outTurned[STEPS];
+}
+
+// All positions are in the turning frame, measured from the compact mark's centre.
+const ANCHOR = {
+  seed: [423.355, 493.365], shoot: [1081.894, 248.944], branch: [1716.086, 438.268], canopy: [2375.754, 258.57],
+};
+const COMPACT_ANCHOR = {
+  seed: [384.142, 361.703], shoot: [1077.541, 383.481], branch: [1050.854, 1048.611], canopy: [382.567, 1053.885],
+};
+const TURN = { seed: 135, shoot: 45, branch: 315, canopy: 225 };
+const landed = {};
+for (const k in COMPACT_ANCHOR) {
+  const c = COMPACT_ANCHOR[k];
+  landed[k] = [(c[0] - COMPACT_CENTRE[0]) / COMPACT_SCALE, (c[1] - COMPACT_CENTRE[1]) / COMPACT_SCALE];
+}
+const FAR = 2950;
+
+const window01 = (t, a, b) => quintic((t - a) / (b - a));
+const JOINS = {
+  shoot: [FAST_AT[0] - 0.25, FAST_AT[0] + BEATS.fast + 0.1],
+  branch: [FAST_AT[1] - 0.25, FAST_AT[1] + BEATS.fast + 0.1],
+  canopy: [FAST_AT[2] - 0.15, RUN],
+};
+// Degrees each triangle sits ahead of its compact slot. These keep the group evenly spaced around
+// the centre: two at 180, three at 120, four at 90. Each newcomer arrives down the middle of the widest gap.
+function ahead(name, t) {
+  const b = window01(t, ...JOINS.branch), c = window01(t, ...JOINS.canopy);
+  if (name === "seed") return -60 + 30 * b + 30 * c;
+  if (name === "shoot") return 30 - 30 * b;
+  if (name === "branch") return 30 - 30 * c;
+  return 0;
+}
+// World pose of one triangle. Everything turns with the frame. Seed starts on the centre and moves
+// out to its slot as Shoot arrives; each newcomer slides straight in along its own spoke.
+function pose(name, t) {
+  const slot = landed[name], spoke = Math.hypot(...slot);
+  const out = window01(t, OUT_AT + 0.12 * OUT, OUT_AT + 0.8 * OUT);
+  const r = name === "seed"
+    ? spoke * window01(t, ...JOINS.shoot) * (1 - out)
+    : spoke + (1 - window01(t, ...JOINS[name]) + out) * FAR;
+  const turn = frameAngle(t) + ahead(name, t);
+  const [x, y] = spin([(slot[0] / spoke) * r, (slot[1] / spoke) * r], turn);
+  return [x, y, TURN[name] + turn];
+}
+
+
+  const PATHS = {
+  "seed": "M349.596 43.7877C386.488 -14.5958 471.636 -14.5958 508.527 43.7877L843.438 573.815C882.987 636.406 838.011 718.027 763.972 718.027H683.162C655.825 718.027 639.554 684.438 650.759 659.503C664.407 629.134 672 595.454 672 560.001C672 425.796 563.205 317.001 429 317.001C294.795 317.001 186 425.795 186 560.001C186 595.454 193.592 629.134 207.24 659.503C218.446 684.437 202.174 718.027 174.837 718.027H94.1512C20.1122 718.027 -24.8631 636.406 14.6863 573.815L349.596 43.7877Z",
+  "shoot": "M1155.65 674.239C1118.76 732.623 1033.61 732.623 996.721 674.239L661.811 144.213C622.261 81.622 667.236 0 741.276 0H923.248C958.594 0 987.248 28.6538 987.248 64V319.026C987.248 368.18 1027.09 408.026 1076.25 408.026C1125.4 408.026 1165.25 368.18 1165.25 319.026V64C1165.25 28.6538 1193.9 0 1229.25 0H1411.1C1485.14 6.10352e-05 1530.11 81.622 1490.56 144.213L1155.65 674.239Z",
+  "branch": "M1643.84 43.7883C1680.74 -14.5955 1765.88 -14.5955 1802.78 43.7883L2137.69 573.815C2177.24 636.406 2132.26 718.027 2058.22 718.027C2040.84 718.027 2024.68 709.126 2015.38 694.443L1802.74 358.504C1765.83 300.205 1680.79 300.206 1643.89 358.505L1431.24 694.442C1421.95 709.126 1405.78 718.027 1388.4 718.027C1314.36 718.026 1269.38 636.405 1308.93 573.815L1643.84 43.7883Z",
+  "canopy": "M2449.9 674.239C2413.01 732.623 2327.86 732.623 2290.97 674.239L1956.06 144.212C1916.51 81.6215 1961.49 0.000488281 2035.52 0.000488281H2114.2C2146.54 0.000488281 2173.8 24.1201 2177.73 56.2156L2210.36 322.462C2216.13 369.603 2256.17 405.029 2303.66 405.029H2437.29C2484.78 405.029 2524.82 369.603 2530.59 322.463L2563.22 56.2156C2567.16 24.1202 2594.41 0.000488281 2626.75 0.000488281H2705.35C2779.39 0.000549316 2824.36 81.6216 2784.81 144.212L2449.9 674.239Z"
+};
+  const COLORS = { seed: "#F07264", shoot: "#EDAA1B", branch: "#41A974", canopy: "#3E99C6" };
+  const VIEW = 1020;
+
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", `${-VIEW} ${-VIEW} ${2 * VIEW} ${2 * VIEW}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Trellis logomark: Seed turns alone, then Shoot, Branch and Canopy each join in turn to complete the compact mark");
+  const pieces = Object.keys(PATHS).map((name) => {
+    const el = document.createElementNS(NS, "path");
+    el.setAttribute("d", PATHS[name]);
+    el.setAttribute("fill", COLORS[name]);
+    svg.append(el);
+    return { name, el };
+  });
+  document.getElementById("pad-gather-stage").append(svg);
+
+  function draw(t) {
+    for (const { name, el } of pieces) {
+      const [x, y, r] = pose(name, t);
+      const a = ANCHOR[name];
+      el.setAttribute("transform", `translate(${x} ${y}) rotate(${r}) translate(${-a[0]} ${-a[1]})`);
+    }
+  }
+
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const buttons = {
+    replay: document.getElementById("pad-gather-replay"),
+    loop: document.getElementById("pad-gather-loop"),
+    slow: document.getElementById("pad-gather-slow"),
+  };
+  let looping = !reduced, speed = 1, run = null;
+
+  function play() {
+    run?.kill();
+    const clock = { t: 0 };
+    run = gsap.to(clock, {
+      t: LOOP,
+      duration: LOOP,
+      ease: "none",
+      onUpdate: () => {
+        // With Loop off the run stops on the finished mark instead of heading back to Seed.
+        if (!looping && clock.t >= RUN && clock.t < OUT_AT) {
+          run.pause();
+          draw(RUN);
+          return;
+        }
+        draw(clock.t);
+      },
+      onComplete: play,
+    }).timeScale(speed);
+  }
+
+  buttons.replay.addEventListener("click", play);
+  buttons.loop.addEventListener("click", () => {
+    looping = !looping;
+    buttons.loop.setAttribute("aria-pressed", String(looping));
+    if (looping) { if (run) run.resume(); else play(); }
+  });
+  buttons.slow.addEventListener("click", () => {
+    speed = speed === 1 ? 0.5 : 1;
+    buttons.slow.setAttribute("aria-pressed", String(speed === 0.5));
+    run?.timeScale(speed);
+  });
+
+  buttons.loop.setAttribute("aria-pressed", String(looping));
+  draw(RUN);
+  if (!reduced && typeof gsap !== "undefined") play();
+
+</script>
+
+<h2>Counting corners</h2>
+
+<p>Look closer and you'll see each of the triangles has a shape cut out of it. One is a circle, the next is a line, the third is another triangle and the fourth is a trapezium. And they aren't random either. The cutouts represent their levels by their vertex count.</p>
+
+<p>Seed is entry level, so its cutout has one vertex. Shoot's cutout has two, Branch's has three and Canopy's has four. The deeper you go, the more corners there are.</p>
+
+<div class="stage trellis-stage">
+  <div id="pad-morph-stage"></div>
+  <div class="t-forms" id="pad-morph-forms" role="group" aria-label="Triangle form"></div>
+  <div class="t-bar">
+    <button type="button" id="pad-morph-loop" aria-pressed="true">Loop</button>
+    <button type="button" id="pad-morph-slow" aria-pressed="false">Half speed</button>
+  </div>
+</div>
+
+<script type="module">
+import gsap from "https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm";
+
+  const MOVE = 1.5;
+  const HOLD = 0.8;
+
+  // The path around the triangle that every form shares: top, right side and bottom-right corner,
+  // then the ten curves of the bottom edge, then the bottom-left corner and left side.
+  const OUTER_START = "M349.597 43.788C386.488 -14.596 471.636 -14.596 508.527 43.788L843.437 573.814C882.987 636.405 838.012 718.027 763.973 718.027";
+  const OUTER_END = "C20.112 718.027 -24.863 636.405 14.686 573.814Z";
+
+  // The same ten curves in each form, so every point has a partner in every other form. Each row
+  // lands exactly on the brand outline. Base is Seed pressed flat.
+  const EDGES = {
+    seed: [737.035, 718.027, 710.099, 718.027, 683.162, 718.027, 655.825, 718.027, 639.554, 684.438, 650.759, 659.503, 664.407, 629.134, 672, 595.454, 672, 560, 672, 476.793, 630.179, 403.354, 566.411, 359.555, 527.327, 332.71, 479.998, 317, 429, 317, 378.002, 317, 330.673, 332.71, 291.589, 359.554, 227.821, 403.353, 186, 476.793, 186, 560, 186, 595.454, 193.592, 629.134, 207.24, 659.503, 218.446, 684.437, 202.174, 718.027, 174.837, 718.027, 147.942, 718.027, 121.046, 718.027, 94.151, 718.027],
+    shoot: [703.315, 718.027, 642.658, 718.027, 582, 718.027, 546.654, 718.027, 518, 689.373, 518, 654.027, 518, 569.018, 518, 484.01, 518, 399.001, 518, 374.424, 508.038, 352.174, 491.932, 336.069, 475.827, 319.963, 453.577, 310.001, 429, 310.001, 404.423, 310.001, 382.173, 319.963, 366.067, 336.068, 349.962, 352.174, 340, 374.424, 340, 399.001, 340, 484.01, 340, 569.018, 340, 654.027, 340, 689.373, 311.346, 718.027, 276, 718.027, 215.384, 718.027, 154.767, 718.027, 94.151, 718.027],
+    branch: [763.972, 718.026, 763.972, 718.026, 763.972, 718.026, 746.595, 718.026, 730.428, 709.126, 721.133, 694.443, 650.251, 582.463, 579.37, 470.484, 508.488, 358.504, 497.417, 341.014, 482.013, 328.772, 464.877, 321.776, 453.452, 317.112, 441.257, 314.78, 429.063, 314.78, 416.868, 314.78, 404.673, 317.112, 393.249, 321.776, 376.112, 328.772, 360.709, 341.015, 349.638, 358.505, 278.756, 470.484, 207.874, 582.463, 136.992, 694.442, 127.697, 709.126, 111.53, 718.026, 94.151, 718.026, 94.151, 718.026, 94.151, 718.026, 94.151, 718.027],
+    canopy: [737.746, 718.026, 711.52, 718.026, 685.293, 718.026, 652.957, 718.026, 625.701, 693.906, 621.768, 661.811, 610.892, 573.062, 600.016, 484.313, 589.14, 395.564, 583.363, 348.424, 543.331, 312.998, 495.838, 312.998, 473.566, 312.998, 451.294, 312.998, 429.022, 312.998, 406.749, 312.998, 384.477, 312.998, 362.205, 312.998, 314.712, 312.998, 274.68, 348.423, 268.903, 395.563, 258.027, 484.312, 247.151, 573.062, 236.275, 661.811, 232.341, 693.906, 205.086, 718.026, 172.75, 718.026, 146.55, 718.026, 120.351, 718.026, 94.151, 718.027],
+    base: [737.035, 718.027, 710.099, 718.027, 683.162, 718.027, 655.825, 718.027, 639.554, 718.027, 650.759, 718.027, 664.407, 718.027, 672, 718.027, 672, 718.027, 672, 718.027, 630.179, 718.027, 566.411, 718.027, 527.327, 718.027, 479.998, 718.027, 429, 718.027, 378.002, 718.027, 330.673, 718.027, 291.589, 718.027, 227.821, 718.027, 186, 718.027, 186, 718.027, 186, 718.027, 193.592, 718.027, 207.24, 718.027, 218.446, 718.027, 202.174, 718.027, 174.837, 718.027, 147.942, 718.027, 121.046, 718.027, 94.151, 718.027],
+  };
+
+  const forms = [
+    { id: "base",   label: "Base",   cutout: "no cutout" },
+    { id: "seed",   label: "Seed",   cutout: "arch" },
+    { id: "shoot",  label: "Shoot",  cutout: "slot" },
+    { id: "branch", label: "Branch", cutout: "chevron" },
+    { id: "canopy", label: "Canopy", cutout: "trapezoid" },
+  ];
+  const ROUTE = ["seed", "shoot", "branch", "canopy", "base"];
+
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const quintic = (u) => { const v = Math.min(1, Math.max(0, u)); return v * v * v * (v * (6 * v - 15) + 10); };
+
+  // One speed curve: a slow gear-up, a steady middle and a long, soft landing.
+  // Progress is its running total, so speed and acceleration both change without any step.
+  const STEPS = 480;
+  const progress = new Float64Array(STEPS + 1);
+  for (let i = 1; i <= STEPS; i++) {
+    const p = (i - 0.5) / STEPS;
+    progress[i] = progress[i - 1] + quintic(p / 0.3) * quintic((1 - p) / 0.45);
+  }
+  function travelled(p) {
+    const at = Math.min(STEPS, p * STEPS), i = Math.min(STEPS - 1, Math.floor(at));
+    return lerp(progress[i], progress[i + 1], at - i) / progress[STEPS];
+  }
+
+  // Seed arrives from Base as a plain circle sliding up through the bottom edge, and forms its feet in
+  // the last part of the move. Canopy leaves for Base like curtains: the feet slide together while
+  // the rounded top shrinks and sinks between the walls, so the gap closes from the top down.
+  const CIRCLE = { x: 429, y: 560, r: 243 };
+  const RISE = 0.7;
+  const ARCH_MOVE = 2.4;
+  const CURTAIN_TRAVEL = 258;
+  const BASE_OUTLINE = OUTER_START + "L94.151 718.027" + OUTER_END;
+
+  // Seed's edge before its feet form: the circle runs straight into the bottom edge with sharp
+  // corners. Only the two outer curves on each side differ from Seed.
+  const SEATED = (() => {
+    const n = EDGES.seed.slice();
+    const { x, y, r } = CIRCLE;
+    const bottom = n[5];
+    const a0 = Math.asin((bottom - y) / r), a1 = Math.atan2(n[11] - y, n[10] - x);
+    const k = (4 / 3) * Math.tan((a0 - a1) / 4) * r;
+    const corner = [x + r * Math.cos(a0), bottom];
+    const foot = [corner[0] + k * Math.sin(a0), bottom - k * Math.cos(a0), n[10] - k * Math.sin(a1), n[11] + k * Math.cos(a1), n[10], n[11]];
+    const line = (from, to) => [lerp(from, to, 1 / 3), bottom, lerp(from, to, 2 / 3), bottom, to, bottom];
+    n.splice(0, 12, ...line(763.973, corner[0]), ...foot);
+    const mirror = (i) => (i % 2 ? foot[i] : 2 * x - foot[i]);
+    const leftFoot = [mirror(2), foot[3], mirror(0), foot[1], 2 * x - corner[0], bottom];
+    n.splice(48, 12, ...leftFoot, ...line(2 * x - corner[0], 94.151));
+    return n;
+  })();
+
+  // Each side of Canopy's cutout as a region that reaches far past the other side, so the
+  // cutout is the area where the two overlap.
+  const CURTAINS = (() => {
+    const n = EDGES.canopy;
+    const curves = (from, to) => { let path = ""; for (let i = from; i < to; i += 6) path += "C" + n.slice(i, i + 6).join(" "); return path; };
+    return {
+      right: `M${n[4]} ${n[5]}${curves(6, 30)}H-400V900H${n[4]}Z`,
+      left: `M${n[28]} ${n[29]}${curves(30, 54)}V900H1300V${n[29]}Z`,
+    };
+  })();
+
+  // Canopy's cutout with its sides moved in by `shift`. Feet and walls keep their shape; the top is
+  // the original top, scaled evenly to fit between them, so its corners stay round and tangent.
+  const CANOPY_CENTRE = 429.02;
+  const WALLS_MEET = EDGES.canopy[10] - CANOPY_CENTRE;
+  function closingCanopy(shift) {
+    const n = EDGES.canopy, c = CANOPY_CENTRE;
+    const slope = (n[10] - n[16]) / (n[11] - n[17]);
+    const sink = (n[11] - n[17]) * (shift / WALLS_MEET) ** 2;
+    const scale = Math.max(0, (n[16] + slope * sink - shift - c) / (n[16] - c));
+    const top = n[17] + sink - (n[17] - n[29]) * scale;
+    const point = (i) => `${c + (n[i] - c) * scale} ${top + (n[i + 1] - n[29]) * scale}`;
+    const curve = (i) => "C" + [i, i + 2, i + 4].map(point).join(" ");
+    const foot = (i, move) => "C" + [0, 1, 2, 3, 4, 5].map((k) => n[i + k] + (k % 2 ? 0 : move)).join(" ");
+    return `M${n[4] - shift} ${n[5]}${foot(6, -shift)}L${point(16)}${curve(18)}${curve(24)}${curve(30)}${curve(36)}L${n[46] + shift} ${n[47]}${foot(48, shift)}V900H${n[4] - shift}Z`;
+  }
+
+  const { x: cx, y: cy, r: cr } = CIRCLE;
+  const SLIDERS = {
+    seed: { id: "seed", seconds: ARCH_MOVE, rise: RISE, seated: SEATED, cutout: `M${cx + cr} ${cy}A${cr} ${cr} 0 1 0 ${cx - cr} ${cy}A${cr} ${cr} 0 1 0 ${cx + cr} ${cy}Z`, drop: 402 },
+    canopy: { id: "canopy", seconds: ARCH_MOVE },
+  };
+  const sliderFor = (from, to) => (from.id === "base" ? SLIDERS[to.id] : to.id === "base" ? SLIDERS[from.id] : undefined);
+
+  const formById = Object.fromEntries(forms.map((form) => [form.id, form]));
+
+  const stage = document.getElementById("pad-morph-stage");
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "-150 -130 1159 979");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "A Trellis triangle changing between its base form and the Seed, Shoot, Branch and Canopy cutouts");
+  const shape = document.createElementNS(NS, "path");
+  shape.setAttribute("fill", "currentColor");
+  svg.style.color = "var(--color-ink)";
+  // The mask cuts the rising circle out of the triangle; anything below the bottom edge stays hidden.
+  const defs = document.createElementNS(NS, "defs");
+  const mask = document.createElementNS(NS, "mask");
+  mask.id = "pad-morph-mask";
+  mask.setAttribute("maskUnits", "userSpaceOnUse");
+  const sheet = document.createElementNS(NS, "rect");
+  for (const [k, v] of [["x", -150], ["y", -130], ["width", 1159], ["height", 979], ["fill", "white"]]) sheet.setAttribute(k, v);
+  const hole = document.createElementNS(NS, "path");
+  hole.setAttribute("fill", "black");
+  for (const [k, v] of [["x", -150], ["y", -130], ["width", 1159], ["height", 979]]) mask.setAttribute(k, v);
+  mask.append(sheet, hole);
+  const curtainClip = document.createElementNS(NS, "clipPath");
+  curtainClip.id = "pad-morph-curtain";
+  const curtain = document.createElementNS(NS, "path");
+  curtain.setAttribute("d", CURTAINS.left);
+  curtainClip.append(curtain);
+  defs.append(mask, curtainClip);
+  svg.append(defs);
+  svg.append(shape);
+  stage.append(svg);
+
+  function draw(from, to, p) {
+    let u = quintic(travelled(p));
+    let a = EDGES[from.id], b = EDGES[to.id];
+    shape.removeAttribute("mask");
+    const slider = sliderFor(from, to);
+    if (slider === SLIDERS.canopy && p > 0 && p < 1) {
+      const v = to.id === "base" ? travelled(p) : 1 - travelled(p);
+      const shift = CURTAIN_TRAVEL * quintic(v);
+      if (shift < WALLS_MEET) {
+        hole.removeAttribute("clip-path");
+        hole.removeAttribute("transform");
+        hole.setAttribute("d", closingCanopy(shift));
+      } else {
+        // Only the two feet are left, closing the last small gap.
+        hole.setAttribute("d", CURTAINS.right);
+        hole.setAttribute("transform", `translate(${-shift} 0)`);
+        hole.setAttribute("clip-path", "url(#pad-morph-curtain)");
+        curtain.setAttribute("transform", `translate(${2 * shift} 0)`);
+      }
+      shape.setAttribute("d", BASE_OUTLINE);
+      shape.setAttribute("mask", "url(#pad-morph-mask)");
+      return;
+    }
+    if (slider && p > 0 && p < 1) {
+      const v = to.id === "base" ? 1 - travelled(p) : travelled(p);
+      if (v <= slider.rise) {
+        hole.removeAttribute("clip-path");
+        hole.setAttribute("d", slider.cutout);
+        hole.setAttribute("transform", `translate(0 ${slider.drop * (1 - quintic(v / slider.rise))})`);
+        shape.setAttribute("d", BASE_OUTLINE);
+        shape.setAttribute("mask", "url(#pad-morph-mask)");
+        return;
+      }
+      a = slider.seated;
+      b = EDGES[slider.id];
+      u = quintic((v - slider.rise) / (1 - slider.rise));
+    }
+    let edge = "";
+    for (let i = 0; i < a.length; i += 6) {
+      edge += "C" + [0, 1, 2, 3, 4, 5].map((k) => lerp(a[i + k], b[i + k], u).toFixed(2)).join(" ");
+    }
+    shape.setAttribute("d", OUTER_START + edge + OUTER_END);
+  }
+
+  const buttons = {
+    loop: document.getElementById("pad-morph-loop"),
+    slow: document.getElementById("pad-morph-slow"),
+  };
+  const picker = document.getElementById("pad-morph-forms");
+  for (const form of forms) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = `pad-morph-${form.id}`;
+    button.innerHTML = `<b>${form.label}</b><small>${form.cutout}</small>`;
+    button.addEventListener("click", () => choose(form));
+    picker.append(button);
+    form.button = button;
+  }
+
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let current = forms[0];
+  let moving = false;
+  let queued = null;
+  let looping = !reduced;
+  let leg = 0;
+  let holdCall = null;
+  let tween = null;
+  let speed = 1;
+
+  function showForm(form) {
+    for (const f of forms) f.button.setAttribute("aria-pressed", String(f === form));
+  }
+
+  function move(to) {
+    if (reduced) {
+      current = to;
+      draw(to, to, 1);
+      showForm(to);
+      return;
+    }
+    const from = current;
+    moving = true;
+    showForm(to);
+    const clock = { p: 0 };
+    tween = gsap.to(clock, {
+      p: 1,
+      duration: sliderFor(from, to)?.seconds ?? MOVE,
+      ease: "none",
+      onUpdate: () => draw(from, to, clock.p),
+      onComplete: () => {
+        moving = false;
+        current = to;
+        const next = queued;
+        queued = null;
+        if (next && next !== current) move(next);
+        else scheduleLoop();
+      },
+    }).timeScale(speed);
+  }
+
+  function scheduleLoop() {
+    holdCall?.kill();
+    if (!looping) return;
+    holdCall = gsap.delayedCall(HOLD / speed, () => {
+      const next = formById[ROUTE[leg]];
+      leg = (leg + 1) % ROUTE.length;
+      move(next);
+    });
+  }
+
+  function choose(form) {
+    looping = false;
+    buttons.loop.setAttribute("aria-pressed", "false");
+    holdCall?.kill();
+    if (moving) queued = form;
+    else if (form !== current) move(form);
+  }
+
+  // Rejoins the route at the current form, heading forward.
+  function resumeRoute() {
+    const at = ROUTE.indexOf(current.id);
+    leg = (at + 1) % ROUTE.length;
+  }
+
+  buttons.loop.addEventListener("click", () => {
+    looping = !looping;
+    buttons.loop.setAttribute("aria-pressed", String(looping));
+    holdCall?.kill();
+    if (looping) {
+      resumeRoute();
+      if (!moving) scheduleLoop();
+    }
+  });
+  buttons.slow.addEventListener("click", () => {
+    speed = speed === 1 ? 0.5 : 1;
+    buttons.slow.setAttribute("aria-pressed", String(speed === 0.5));
+    tween?.timeScale(speed);
+  });
+
+  draw(current, current, 1);
+  showForm(current);
+  buttons.loop.setAttribute("aria-pressed", String(looping));
+  if (typeof gsap !== "undefined") scheduleLoop();
+
+</script>
+
+<h2>Strong idea, lacklustre execution</h2>
+
+<p>Overall I think the idea I came up with was really strong and intricate, but my execution of it was a bit lacklustre. I wish I had put more effort into making every part of the brand guidelines much better, and even introduced a custom typeface for Trellis, one that would really stand out and match the logomark.</p>
+
+<p>But nevertheless, it got me a finalist spot at the PAD awards. Since this was my first time doing logo design and branding, I guess that wasn't a bad attempt at all.</p>
+
+<p>If you want to see the real thing, my entry is in the <a href="https://drive.google.com/file/d/1L71khfpTaCDNBWII0Sam50wH-xFFrsl0/view?usp=sharing">PAD awards booklet</a> among the special mentions for Brands for Life, and you can also go through <a href="">the full submission</a> I sent in.</p>
