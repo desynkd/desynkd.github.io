@@ -5,8 +5,8 @@ export const site = {
   role: "Software developer",
   positioning: "Software developer. I like building stuff with code.",
   about: [
-    "I'm a 4th-year CS undergraduate who learning far better by building things that actually work.",
-    "Outside of client work I build my own projects end to end and end up doing random things like designing and editing.",
+    "I'm a 4th-year CS undergraduate, and I learn best by building things that actually work.",
+    "Outside of client work I build my own projects end to end. Lately that's meant putting out a few mobile apps and trying my hand at making games.",
   ],
   available: true,
   email: { user: "ravindupeeris180", domain: "gmail.com" },
