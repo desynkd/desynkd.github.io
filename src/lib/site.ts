@@ -14,12 +14,4 @@ export const site = {
   linkedin: "https://www.linkedin.com/in/ravindupeeris/",
   upwork: "https://www.upwork.com/freelancers/~0125d7da76fcef473a?mp_source=share",
   resumeHref: "/resume.pdf",
-  // What I'm up to right now.
-  now: {
-    items: [
-      { label: "Lately", text: "Putting out mobile apps through prjkt studios and quietly working on a bigger web thing." },
-      { label: "Games", text: "Playing them, and lately trying my hand at making them." },
-      { label: "Off-code", text: "Branding, design and video editing when I'm not coding." },
-    ],
-  },
 } as const;
