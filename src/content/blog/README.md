@@ -19,6 +19,7 @@ title: The post title
 description: One or two sentences. Used in the blog list, RSS and link previews.
 date: 2026-11-01
 updated: 2026-11-08      # optional
+image: /media/my-post/og.png # optional, 1200×630, shown when the link is shared
 tags: [obsidian, plugin] # optional
 draft: true              # optional, drafts only appear in `npm run dev`
 ---

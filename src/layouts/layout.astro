@@ -8,16 +8,23 @@ import type { DitherTier } from "@/components/AmbientDither.astro";
 type Props = {
   title?: string;
   description?: string;
+  /** Link preview image, site-absolute and 1200×630. */
+  image?: string;
+  ogType?: "website" | "article";
   ditherTier?: DitherTier;
 };
 
 const {
   title = "Ravindu Peeris",
   description = "Software developer building fast, reliable web apps and APIs.",
+  image,
+  ogType = "website",
   ditherTier = "B",
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+// Crawlers need a full URL; a site-absolute path does not resolve for them.
+const imageURL = image && new URL(image, Astro.site);
 ---
 
 <html lang="en">
@@ -42,10 +49,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
 
-		<meta property="og:type" content="website" />
+		<meta property="og:type" content={ogType} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonicalURL} />
+		{imageURL && (
+			<>
+				<meta property="og:image" content={imageURL} />
+				<meta property="og:image:width" content="1200" />
+				<meta property="og:image:height" content="630" />
+				<meta name="twitter:image" content={imageURL} />
+			</>
+		)}
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
