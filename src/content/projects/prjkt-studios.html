@@ -1,0 +1,42 @@
+---
+title: Prjkt Studios
+outcome: A one-person studio for my own takes on apps that already exist, rebuilt the way I wanted them, with one public home for all of them.
+role: Solo · design, build, release
+timeframe: 2026
+status: in-progress
+stack: [Next.js, React, Tailwind, Expo, React Native, Kotlin, SQLite, llama.rn]
+live: https://www.prjktstudios.com/
+featured: true
+order: 1
+---
+<p>A lot of the apps I'd want to use already exist, they just don't work the way I want them to. I've always had a weird thing about handing my finances to an online app, app blockers come with subscriptions, and focus timers want an account. So I started building my own versions, the way I actually wanted them.</p>
+
+<p><a href="https://www.prjktstudios.com/">Prjkt Studios</a> is where they all live. It's the home for a family of sibling apps that share a look, a set of mascots, the same help docs and the same opinions about your data. Each app gets its own space under the studio, and new ones join it as they're ready.</p>
+
+<h2>The rules every app follows</h2>
+
+<p>All of them are built by me end to end, and they share a few opinions:</p>
+
+<ul>
+  <li><strong>Nothing leaves the device.</strong> The Android release builds have the internet permission stripped out by a config plugin. No accounts, no analytics, no sync.</li>
+  <li><strong>Code decides, not a model.</strong> Where there is a model involved, it only proposes. Plain, tested functions make the calls that matter.</li>
+  <li><strong>Nothing happens silently.</strong> If an app isn't sure, it asks instead of guessing.</li>
+</ul>
+
+<h2>Wherewithal</h2>
+
+<p>A private spending log built from the SMS alerts your bank already sends. An on-device model (run through <code>llama.rn</code>) reads a few messages from each bank once and writes a template, which you approve. After that, plain code parses every message, so the model isn't even loaded in normal use. Transfers between your own accounts and card repayments are worked out by code, not guessed. The data sits in SQLite encrypted with SQLCipher, behind a fingerprint lock. Android, in closed testing. <a href="https://wherewithal.prjktstudios.com/">wherewithal.prjktstudios.com</a>.</p>
+
+<h2>Everglae</h2>
+
+<p>An app lock for the apps you open without thinking, with daily limits, passes and a strict mode that only lets you make things stricter. Opening a blocked app shows a darkly funny line, or a photo or video of your choosing, instead. The detector runs as an accessibility service in its own process that never loads React Native, so the part that stays alive all day uses about 6 MB. Android, in closed testing. <a href="https://everglae.prjktstudios.com/">everglae.prjktstudios.com</a>.</p>
+
+<h2>Valkyr</h2>
+
+<p>A quiet focus timer for the browser. A purple vine grows in from the edges of the window and weaves through the numbers the longer you go without pausing. Pause and it withers, and resuming regrows it from nothing. It can pop out into its own Chrome window, and it stores nothing remotely. Live on the web at <a href="https://valkyr.prjktstudios.com/">valkyr.prjktstudios.com</a>.</p>
+
+<h2>What's next</h2>
+
+<p>Two more are already being built. <strong>Aufstieg</strong> is a lifting log that prefills every set from last time so logging never slows a set down. <strong>Anthem</strong> catches project ideas from anywhere on the phone and only lets a few be active at once. It already links into Everglae, so the block screen can suggest a quest to pick up instead.</p>
+
+<p>And one more, still under a codename: <strong>Maybay</strong>. You know that moment on a road trip when a mountain shows up on the horizon and nobody in the car knows what it is? Point your phone at it, tap the peak and it tells you. It's starting with Sri Lanka's hill country.</p>

@@ -2,9 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Blog posts are HTML in a content folder Tailwind does not detect on its own;
-   register it so posts can use utilities. */
+/* Blog posts and projects are HTML in content folders Tailwind does not detect
+   on its own; register them so they can use utilities. */
 @source "../content/blog";
+@source "../content/projects";
 
 @custom-variant dark (&:is(.dark *));
 
