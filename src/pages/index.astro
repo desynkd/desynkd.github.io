@@ -9,7 +9,7 @@ import PostCard from "@/components/PostCard.astro";
 import ObfuscatedEmail from "@/components/ObfuscatedEmail.astro";
 import { site } from "@/lib/site";
 
-const projects = (await getCollection("projects", ({ data }) => data.featured))
+const projects = (await getCollection("projects", ({ data }) => data.featured && (import.meta.env.DEV || !data.draft)))
   .sort((a, b) => a.data.order - b.data.order)
   .slice(0, 4);
 

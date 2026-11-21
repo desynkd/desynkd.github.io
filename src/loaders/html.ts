@@ -1,9 +1,9 @@
-// Astro content-layer loader for blog posts written as HTML.
+// Astro content-layer loader for blog posts and projects written as HTML.
 //
 // Each `<base>/<slug>.html` is YAML frontmatter followed by an HTML fragment,
-// which ArticleLayout renders inline (see `renderPostHtml` for what happens to
-// it on the way). Only top-level `.html` files are posts, so a README or other
-// notes can sit alongside them.
+// which ArticleLayout or ProjectLayout renders inline (see `renderPostHtml` for
+// what happens to it on the way). Only top-level `.html` files are entries, so a
+// README or other notes can sit alongside them.
 import type { Loader } from "astro/loaders";
 import matter from "gray-matter";
 import { readdir, readFile } from "node:fs/promises";
@@ -47,7 +47,7 @@ export function htmlLoader({ base }: HtmlLoaderOptions): Loader {
           });
         }
 
-        logger.info(`Loaded ${entries.length} post${entries.length === 1 ? "" : "s"} from ${base}/.`);
+        logger.info(`Loaded ${entries.length} entr${entries.length === 1 ? "y" : "ies"} from ${base}/.`);
       }
 
       await sync();
