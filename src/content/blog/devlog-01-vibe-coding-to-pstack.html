@@ -1,0 +1,505 @@
+---
+title: "Dev log 01: From vibe coding to verification"
+description: The first Prjkt Studios dev log. How spare Claude Code usage turned into Everglae and Wherewithal, and how I started using pstack to get an agent to drive Wherewithal and prove its own work.
+date: 2026-11-24
+image: /media/devlog-01-vibe-coding-to-pstack/og.png
+tags:
+  - prjkt-studios
+  - devlog
+  - wherewithal
+  - everglae
+  - pstack
+---
+<style>
+  /* Shared bits for every stage in this post. */
+  .dl-stage { display: grid; font-family: var(--font-sans); color: var(--color-ink); }
+  .dl-stage .dl-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem 1rem;
+    padding: 1rem 1.25rem 0.75rem;
+  }
+  .dl-stage .dl-title { font-size: var(--text-ui); letter-spacing: var(--text-ui--letter-spacing); text-transform: uppercase; color: var(--color-ink-mute); }
+  .dl-stage .dl-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1rem; border-top: 1px solid var(--color-rule);
+  }
+  .dl-stage button {
+    font-family: var(--font-sans); font-size: var(--text-ui); letter-spacing: var(--text-ui--letter-spacing);
+    text-transform: uppercase; color: var(--color-ink-mute); background: transparent;
+    border: 0; border-radius: var(--radius-pill); padding: 0.25rem 0.75rem; cursor: pointer;
+    transition: color 200ms, background-color 200ms;
+  }
+  .dl-stage button:hover { color: var(--color-ink-soft); }
+  .dl-stage button[aria-pressed="true"] { background: var(--color-silver); color: var(--color-ink-soft); }
+  .dl-stage button:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+  .dl-stage button:disabled { opacity: 0.35; cursor: default; }
+  .dl-stage code, .dl-stage .dl-mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.75rem; }
+  .dl-stage .dl-spacer { flex: 1; }
+
+  /* Trust ladder */
+  .dl-ladder .dl-body { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 1.25rem; padding: 0.5rem 1.25rem 1.25rem; }
+  .dl-ladder ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.375rem; position: relative; }
+  .dl-ladder li button {
+    width: 100%; display: flex; align-items: center; gap: 0.625rem; text-align: left;
+    padding: 0.55rem 0.75rem; border-radius: 0.875rem; border: 1px solid var(--color-rule);
+    text-transform: none; letter-spacing: 0; font-size: 0.875rem; color: var(--color-ink-soft);
+  }
+  .dl-ladder li.next button { border-style: dashed; color: var(--color-ink-mute); }
+  .dl-ladder li button[aria-pressed="true"] { border-color: var(--color-ink-soft); }
+  .dl-ladder .dot { flex: none; width: 0.75rem; height: 0.75rem; border-radius: 50%; border: 1.5px solid var(--color-ink-soft); }
+  .dl-ladder .dot.full { background: var(--color-ink-soft); }
+  .dl-ladder .dot.half { background: linear-gradient(90deg, var(--color-ink-soft) 50%, transparent 50%); }
+  .dl-ladder .dot.unknown { border-style: dotted; position: relative; }
+  .dl-ladder .dot.unknown::after { content: "?"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 0.5rem; font-weight: 700; line-height: 1; color: var(--color-ink-soft); }
+  .dl-ladder .here {
+    margin-left: auto; font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--color-ink); color: var(--color-paper); border-radius: var(--radius-pill); padding: 0.1rem 0.5rem;
+  }
+  .dl-ladder .dl-detail h4 { margin: 0 0 0.25rem; font-size: 1.125rem; font-weight: 600; }
+  .dl-ladder .dl-detail .kicker { font-size: var(--text-caption); color: var(--color-ink-mute); margin: 0 0 0.75rem; }
+  .dl-ladder .dl-detail p { margin: 0 0 0.75rem; font-size: 0.9375rem; line-height: 1.6; color: var(--color-ink-soft); }
+  .dl-ladder .dl-detail .mine { border-left: 2px solid var(--color-rule); padding-left: 0.75rem; }
+  .dl-ladder .legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: var(--text-caption); color: var(--color-ink-mute); }
+  .dl-ladder .legend span { display: inline-flex; align-items: center; gap: 0.375rem; }
+  @media (max-width: 40rem) { .dl-ladder .dl-body { grid-template-columns: 1fr; } }
+
+  /* One run, as a diagram */
+  .dl-run .strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.375rem 0.5rem; padding: 0.25rem 1.25rem 1rem; }
+  .dl-run .strip.end { padding: 1rem 1.25rem 1.25rem; }
+  .dl-run .strip .lab { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-mute); margin-right: 0.25rem; }
+  .dl-run .chip { font-size: 0.8125rem; color: var(--color-ink-soft); border: 1px solid var(--color-rule); border-radius: var(--radius-pill); padding: 0.3rem 0.75rem; background: var(--color-paper); }
+  .dl-run .strip i { font-style: normal; color: var(--color-ink-mute); }
+  .dl-run .flow {
+    display: grid; grid-template-columns: 8.5rem 3rem minmax(0, 22rem) 3rem 8.5rem;
+    justify-content: center; align-items: center; padding: 0 1rem;
+  }
+  .dl-run .actor { display: grid; justify-items: center; gap: 0.375rem; text-align: center; }
+  .dl-run .actor b, .dl-run .device b { font-size: 1rem; font-weight: 600; }
+  .dl-run .actor span, .dl-run .device span { font-size: 0.75rem; line-height: 1.45; color: var(--color-ink-mute); }
+  .dl-run .actor svg { width: 3.25rem; height: auto; color: var(--color-ink-soft); }
+  .dl-run .link { display: grid; justify-items: center; gap: 0.25rem; color: var(--color-ink-mute); }
+  .dl-run .link svg { width: 3rem; height: auto; }
+  .dl-run .link small { font-size: 0.625rem; letter-spacing: 0.06em; text-transform: uppercase; text-align: center; }
+  .dl-run .loop { position: relative; width: 100%; aspect-ratio: 380 / 340; color: var(--color-ink-mute); }
+  .dl-run .loop svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .dl-run .node {
+    position: absolute; transform: translate(-50%, -50%); width: 36%;
+    display: grid; gap: 0.1rem; text-align: center; padding: 0.45rem 0.5rem;
+    background: var(--color-paper); border: 1px solid var(--color-rule); border-radius: 1rem;
+  }
+  .dl-run .node b { font-size: 0.8125rem; font-weight: 600; color: var(--color-ink); }
+  .dl-run .node span { font-size: 0.6875rem; line-height: 1.35; color: var(--color-ink-mute); }
+  .dl-run .node.n { left: 50%; top: 15.3%; }
+  .dl-run .node.e { left: 81%; top: 50%; }
+  .dl-run .node.s { left: 50%; top: 84.7%; }
+  .dl-run .node.w { left: 19%; top: 50%; }
+  .dl-run .hub { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.5; color: var(--color-ink-mute); }
+  .dl-run .device { display: grid; justify-items: center; gap: 0.5rem; }
+  .dl-run .sms { font-size: 0.6875rem; line-height: 1.35; text-align: center; color: var(--color-ink-soft); border: 1px dashed var(--color-ink-mute); border-radius: 0.75rem; padding: 0.35rem 0.5rem; }
+  .dl-run .sms-arrow { color: var(--color-ink-mute); line-height: 1; margin-top: -0.25rem; }
+  .dl-run .handset {
+    width: 7.5rem; aspect-ratio: 9 / 16; border: 5px solid var(--color-ink); border-radius: 1.5rem; background: var(--color-paper);
+    display: grid; align-content: center; justify-items: center; gap: 0.25rem; padding: 0.5rem; text-align: center;
+  }
+  .dl-run .handset b { font-size: 0.875rem; }
+  .dl-run .handset span { font-size: 0.6875rem; }
+  .dl-run { container-type: inline-size; }
+  @container (max-width: 47rem) {
+    .dl-run .flow { grid-template-columns: minmax(0, 22rem); gap: 0.5rem; justify-items: center; }
+    .dl-run .link svg { transform: rotate(90deg); width: 2.25rem; margin-block: 0.5rem; }
+  }
+  .dl-run .device > div:first-child { display: grid; justify-items: center; gap: 0.25rem; }
+
+
+  /* Map vs agent */
+  .dl-map .dl-body { display: grid; grid-template-columns: 16rem minmax(0, 1fr); gap: 1.5rem; padding: 0.25rem 1.25rem 1.25rem; align-items: start; }
+  .dl-map .phone {
+    width: 16rem; aspect-ratio: 9 / 19; border-radius: 2rem; border: 6px solid var(--color-ink);
+    background: var(--color-paper); padding: 1.5rem 0.875rem 1rem; display: flex; flex-direction: column; gap: 0.5rem;
+    overflow: hidden; font-size: 0.75rem;
+  }
+  .dl-map .el { border-radius: 0.625rem; padding: 0.5rem 0.625rem; transition: background-color 250ms, outline-color 250ms; outline: 1.5px solid transparent; }
+  .dl-map .el.big { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; padding-bottom: 0; }
+  .dl-map .el.sub { color: var(--color-ink-mute); padding-top: 0; }
+  .dl-map .el.row { background: var(--color-paper-raised); display: flex; justify-content: space-between; gap: 0.5rem; }
+  .dl-map .el.head { font-weight: 600; font-size: 0.875rem; }
+  .dl-map .el.note { color: var(--color-ink-mute); font-style: italic; }
+  .dl-map .el.flash { background: var(--color-silver); }
+  .dl-map .el .x { display: none; }
+  .dl-map .phone.agent .el { outline: 1.5px dashed var(--color-ink-mute); background: transparent; padding: 0.4rem 0.5rem; font-size: 0.75rem; }
+  .dl-map .phone.agent .el.flash { background: var(--color-silver); }
+  .dl-map .phone.agent .el > *:not(.x) { display: none; }
+  .dl-map .phone.agent .el .x {
+    display: block; color: var(--color-ink-soft);
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.5625rem; line-height: 1.4; word-break: break-all;
+    font-style: normal; font-weight: 400; letter-spacing: 0;
+  }
+  .dl-map .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .dl-map .steps button {
+    width: 100%; text-align: left; text-transform: none; letter-spacing: 0; font-size: 0.875rem;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.25rem 1rem;
+    border: 1px solid var(--color-rule); border-radius: 1rem; padding: 0.625rem 0.875rem; color: var(--color-ink-soft);
+  }
+  .dl-map .steps button[aria-pressed="true"] { border-color: var(--color-ink-soft); background: var(--color-paper); }
+  .dl-map .steps b { grid-column: 1 / -1; font-weight: 600; color: var(--color-ink); }
+  .dl-map .steps .col small { display: block; font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-mute); margin-bottom: 0.15rem; }
+  .dl-map .steps .col { font-size: 0.8125rem; line-height: 1.5; }
+  @media (max-width: 44rem) {
+    .dl-map .dl-body { grid-template-columns: 1fr; justify-items: center; }
+    .dl-map .steps { width: 100%; }
+    .dl-map .steps button { grid-template-columns: 1fr; }
+  }
+
+  /* Feature map growth */
+  .dl-grow .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0.5rem; padding: 0.25rem 1.25rem 0.75rem; }
+  .dl-grow .tile {
+    border: 1px solid var(--color-rule); border-radius: 1rem; padding: 0.75rem; min-height: 5.5rem;
+    display: grid; align-content: space-between; gap: 0.5rem; transition: opacity 300ms, transform 300ms, background-color 300ms;
+  }
+  .dl-grow .tile b { font-weight: 600; font-size: 0.9375rem; }
+  .dl-grow .tile small { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-mute); }
+  .dl-grow .tile.absent { opacity: 0.25; border-style: dashed; transform: scale(0.96); }
+  .dl-grow .tile.absent small { visibility: hidden; }
+  .dl-grow .tile.new { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
+  .dl-grow .tile.new small { color: var(--color-silver); }
+  .dl-grow .tile.changed { background: var(--color-silver); }
+  .dl-grow .summary { padding: 0 1.25rem 1rem; font-size: 0.9375rem; line-height: 1.6; color: var(--color-ink-soft); margin: 0; }
+</style>
+
+<div class="callout">
+  <p>This is the first Prjkt Studios dev log. <a href="/prjkt-studios/">Prjkt Studios</a> is what I call the little collection of apps I build for myself: Wherewithal, Everglae and Valkyr so far, with Aufstieg and Anthem still cooking. These logs are where I write about building them.</p>
+</div>
+
+<p>So this whole thing started about a month and a half ago. I had been using Claude Code for my academic and work related stuff, but I started noticing that I never hit 100% of my weekly usage, and honestly it felt like I was wasting a big opportunity.</p>
+
+<p>Coincidentally, I had just fixed an old laptop of mine, and a friend told me about Remote Control in Claude Code. That was kind of a game changer. Now the old laptop sits plugged in at a corner of the room, and I just give it tasks while I sleep, go out or work on other stuff. So I thought this was my time to actually start building something and get my money's worth out of Claude Code.</p>
+
+<h2>Everglae, or how to rickroll yourself</h2>
+
+<p>I have always had ideas for apps I would personally want on my phone. One of them was an app locker that plays a video when an app locks, so once my time runs out I either get rickrolled or get some dumb motivational video telling me to stop doomscrolling and do something actually useful.</p>
+
+<p>The app sounded pretty straightforward, so I just got Claude to cook something up. Luckily I had done Android development on that old laptop before, so it already had all the tools it needed. I gave Claude my ideas and told it to make an Expo app. I admit my prompting at the start was very basic, and it took a fair bit of directing and micromanaging to get it to do exactly what I wanted. I plugged in my Pixel so it could test the app on a real phone and keep building overnight while I slept.</p>
+
+<p>I started on a Thursday afternoon, and by that night I had a base version with daily limits, timed locks, a strict mode and onboarding. Under the hood it uses an accessibility service to notice which app is in front, Android's usage stats to add up how long I've spent in it, and a full screen activity that plays the video.</p>
+
+<p>I also wanted it to have a distinct UI style and a bit of personality, so I made a small mascot for it and got Claude to bring it to life. Fun fact: Claude wrote all ten of the mascot's animations (idle, hop, spin, yawn, sneeze and so on) as raw Lottie JSON, using Python scripts. No After Effects involved. I named it Everglae because I had Pretty Patterns on loop those days and wanted to give a nod to it.</p>
+
+<h2>Wherewithal, the notebook I never kept up with</h2>
+
+<p>In my view Everglae was a great success. So I remembered another app I had wanted to make for a long time: an app to track my finances. Yes, I was one of those guys who had a notebook and wrote down how much I spent. But the notebook got forgotten after a while, I stopped keeping up with my finances, and I realised I was spending a lot.</p>
+
+<p>Coincidentally (again), I came across Matt Pocock and his <a href="https://github.com/mattpocock/skills">skills for Claude</a>. I hadn't really used many Claude skills at this point (yes, I was a complete noob), so I went through them and found a few that looked interesting. <code>/grill-me</code> was one of them, so I got it into a local repo and started using it to work out my ideas with Claude. I gotta say I loved it. I felt like I could articulate what I wanted much better, and Claude and I ended up with a proper shared understanding of the app before anything got built.</p>
+
+<p>And so Wherewithal was born. I started it on the Saturday after starting Everglae, and version 1.0 was running on my Pixel by Sunday night. It reads my bank's SMS messages and turns them into transactions. I named it Wherewithal as a nod to Lowswimmer, another artist I had on repeat. And I gotta say, Wherewithal might be my favourite app I've built, even now, after dabbling in a few more since.</p>
+
+<h2>Living with my own apps</h2>
+
+<p>What started as a way to use up my Claude usage became a very productive thing. The next few weeks were basically me using the apps and slowly iterating on them. You can check the release notes on <a href="https://wherewithal.prjktstudios.com">wherewithal.prjktstudios.com</a> and <a href="https://everglae.prjktstudios.com">everglae.prjktstudios.com</a> to see how they changed over the weeks. Wherewithal is on its twentieth release now.</p>
+
+<p>I gotta admit that Wherewithal, although it's my favourite, was depressing to look at, because I could finally see how much I was actually spending.</p>
+
+<p>During that time I thought these were good apps for me, but I could tell I only used them because I was the one who made them. I had doubts that anyone else would have the same enthusiasm, so I wasn't very keen to release them. Especially Wherewithal. It could read my bank texts, but cash and anything the bank didn't text me about I still had to add by hand, and sorting out categories took a while. I also found out that KiwiMoney is a thing, and it does something pretty close. And the same friend who got me onto Remote Control told me a coworker of his had built his own version of it too, so I knew I wasn't doing anything very novel. So I just kept iterating, making the apps look nice to me and adding all the features I wanted so I could enjoy using them myself.</p>
+
+<h2>Okay fine, the Play Store</h2>
+
+<p>The decision to maybe put them out came after a couple of my hometown friends, who aren't in the tech industry, saw the apps and got interested. I started sending them APKs, but some of them couldn't install them because Google Play Protect kept getting in the way. So I finally said screw it, got a Google Play developer account last week and set up testing tracks so they could install them from the Play Store.</p>
+
+<p>And that's how we got here, in a nutshell. I have about three more apps I haven't talked about here, and if they turn out okay I might push them out too. Wherewithal has a special place for me, so I'm planning to promote it a bit and hopefully get it to a proper Play Store release, just for fun.</p>
+
+<h2>The part that didn't sit right</h2>
+
+<p>Btw, this whole post was meant to be about something else. As you probably guessed, these apps were pretty much vibe coded, and that never sat right with me. I barely wrote any code for them, and at the time I kind of hated that. I knew what the apps did and roughly how they worked, but I have always written code and been very much engaged with the codebase, so this felt weird.</p>
+
+<p>Around this time I came across Matt Pocock and Lauren Tan (better known as Poteto), and listened to a podcast they did together. I got really interested in how they approach building products in this age of AI, and especially in something they talked about called a trust ladder.</p>
+
+<p>The way I understood it: every time an agent gets something wrong, you push the fix as far up the ladder as it will go. The best fix is code that makes the mistake impossible. If you can't do that, a lint rule or a type check. If not that, a rule or a skill. And only at the bottom, someone reviewing it. On top of all that, you want a way for the agent to prove its own work, and you earn that trust before you let many agents loose in parallel.</p>
+
+<div class="stage dl-stage dl-ladder" id="devlog-01-ladder">
+  <div class="dl-head">
+    <span class="dl-title">The trust ladder, as I understand it · and where Wherewithal is</span>
+    <span class="legend">
+      <span><i class="dot full"></i>has it</span>
+      <span><i class="dot half"></i>partly</span>
+      <span><i class="dot"></i>not yet</span>
+      <span><i class="dot unknown"></i>not sure</span>
+    </span>
+  </div>
+  <div class="dl-body">
+    <ol data-rungs></ol>
+    <div class="dl-detail" data-detail aria-live="polite"></div>
+  </div>
+</div>
+
+<p>Coding agents are already better developers than I am, so if I tried to put myself in the middle of the process, I would just become the bottleneck. Maybe what I should be striving for instead is making sure the agents actually do what I want, and that they work in the best, most controlled environment possible, so the apps come out safe and sound. That's how I got hooked on the "good codebase and verification" part of the whole thing, and that's where Poteto's <a href="https://github.com/cursor/plugins/tree/main/pstack">pstack</a> comes in.</p>
+
+<p>I just started using pstack, and I wanted to share my enthusiasm and how I've been bringing it into Wherewithal. That's the actual point of this post, even though I went on a huge story about how Everglae and Wherewithal came to be. I have this thing where I understand stuff better when I'm explaining it to someone, so this is my avenue for that.</p>
+
+<h2>Feature maps</h2>
+
+<p>The part of pstack I was most interested in is what Poteto calls the feature map. In her <a href="https://x.com/poteto/status/2094457600259842065">Complete Guide to pstack</a>, she describes it as "an easily searchable map of all the features available in your app": what each one does and how a user gets to it. With a map like that, an agent can find its way around the app like a real user would, which makes it much better at checking its own work. The catch is that the map goes out of date as the app changes, so it has to be maintained.</p>
+
+<p>This clicked for me because, at this point, I was plugging in my Pixel before every release and getting Claude to go through everything again and again to make sure it all worked. This looked like a way to make that repeatable and structured.</p>
+
+<p>So I ran <code>/pstack:create-verification-skill</code>, which wrote a skill called <code>verify-wherewithal</code>. It lets a future agent boot the app, drive it like a user and save proof that a change actually works.</p>
+
+<h3>How Claude drives the app</h3>
+
+<p>Claude starts an Android emulator with no window, from a saved snapshot. On that snapshot the app is already set up with about two and a half months of made-up bank texts (115 of them) from three made-up banks, so there is real-looking data to poke at and none of it is mine. There is also a small script, <code>sms.mjs</code>, that sends a fresh fake bank text to the emulator whenever a journey needs one. It refuses to run against anything that isn't an emulator.</p>
+
+<p>To read the screen, Claude dumps the current UI as XML with <code>uiautomator</code>. Every button and label comes out as a node with its text, its accessibility label and where it sits on screen. Claude never picks coordinates itself. It asks a helper to tap something by its label, and the helper taps the centre of that node. Screenshots come from <code>screencap</code> and get saved outside the repo. And because the emulator boots with <code>-no-snapshot-save</code>, nothing a run does is kept, so every run starts clean and a journey can add or delete whatever it wants.</p>
+
+<p>Put together, one run looks roughly like this.</p>
+
+<div class="stage dl-stage dl-run" id="devlog-01-run">
+  <div class="dl-head"><span class="dl-title">One verification run</span></div>
+  <div class="strip">
+    <span class="lab">Start</span>
+    <span class="chip">Boot the snapshot, no window</span><i>→</i>
+    <span class="chip">Open the app</span><i>→</i>
+    <span class="chip">Health check</span>
+  </div>
+  <div class="flow">
+    <div class="actor">
+      <svg viewBox="0 0 52 60" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M6 4h28l12 12v40H6z" stroke-linejoin="round"/><path d="M34 4v12h12"/>
+        <path d="M13 26h24M13 34h24M13 42h16" stroke-linecap="round"/>
+      </svg>
+      <b>Claude</b>
+      <span>reads the feature map: a recipe for the journey a change touches</span>
+    </div>
+    <div class="link" aria-hidden="true">
+      <svg viewBox="0 0 60 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h54M50 1l6 5-6 5"/></svg>
+      <small>follows it</small>
+    </div>
+    <div class="loop">
+      <svg viewBox="0 0 380 340" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <defs>
+          <marker id="devlog-01-arrowhead" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0L10 5L0 10z" fill="currentColor" stroke="none"/>
+          </marker>
+        </defs>
+        <circle cx="190" cy="170" r="118" stroke-dasharray="2 6" opacity="0.5"/>
+        <path d="M265.85 79.61A118 118 0 0 1 299.41 125.8" marker-end="url(#devlog-01-arrowhead)"/>
+        <path d="M299.41 214.2A118 118 0 0 1 265.85 260.39" marker-end="url(#devlog-01-arrowhead)"/>
+        <path d="M114.15 260.39A118 118 0 0 1 80.59 214.2" marker-end="url(#devlog-01-arrowhead)"/>
+        <path d="M80.59 125.8A118 118 0 0 1 114.15 79.61" marker-end="url(#devlog-01-arrowhead)"/>
+      </svg>
+      <div class="node n"><b>Read the screen</b><span>as XML, every label</span></div>
+      <div class="node e"><b>Tap by label</b><span>never coordinates</span></div>
+      <div class="node s"><b>Screenshot</b><span>saved as proof</span></div>
+      <div class="node w"><b>Check the map</b><span>did the right thing show up?</span></div>
+      <div class="hub">Repeat for<br>every step</div>
+    </div>
+    <div class="link" aria-hidden="true">
+      <svg viewBox="0 0 60 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h52M50 1l6 5-6 5M10 1L4 6l6 5"/></svg>
+      <small>over adb</small>
+    </div>
+    <div class="device">
+      <div>
+        <div class="sms">sms.mjs sends a<br>fake bank text</div>
+        <div class="sms-arrow" aria-hidden="true">↓</div>
+      </div>
+      <div class="handset">
+        <b>Emulator</b>
+        <span>no window</span>
+        <span>115 fake bank texts</span>
+        <span>3 made-up banks</span>
+      </div>
+    </div>
+  </div>
+  <div class="strip end">
+    <span class="lab">End</span>
+    <span class="chip">Clean up. Nothing is saved, so the next run starts fresh</span>
+  </div>
+</div>
+
+<p>One thing I got wrong at first: a normal run doesn't go through every flow in the app. It drives the feature a change touches. Going through everything is the maintenance pass's job (more on that below).</p>
+
+<h3>Reading a feature map</h3>
+
+<p>Alongside the skill's <code>SKILL.md</code>, it wrote the feature map itself: a folder of Markdown files, one per feature, plus a README that indexes them. Every feature file has the same four sections: the sub-features, how a user gets there, the exact commands to drive it along with what the screen should say after each one, and the gotchas that waste a run or fake a pass.</p>
+
+<p>I first thought of it as a test script, but it isn't really one. Nothing executes it. There's no assertion runner and no pixel diffing. It's a recipe that Claude reads and follows using its own judgement. I think that's why I find them hard to read, honestly. They're written for an agent, not for me. So I lined up one of them, the journey where a new bank text becomes a transaction, with what Claude actually does for each step.</p>
+
+<div class="stage dl-stage dl-map" id="devlog-01-map">
+  <div class="dl-head">
+    <span class="dl-title">features/messages.md · what the map says vs what Claude does</span>
+  </div>
+  <div class="dl-body">
+    <div class="phone" data-phone></div>
+    <ol class="steps" data-steps></ol>
+  </div>
+  <div class="dl-bar">
+    <button data-see="user" aria-pressed="true">What I see</button>
+    <button data-see="agent" aria-pressed="false">What Claude sees</button>
+  </div>
+</div>
+
+<p>The bit I like most is the "second view". Claude doesn't count the screen saying "1 new transaction" as proof by itself. It goes and finds the transaction in another place, and then checks that Home's total went up by exactly the amount it sent. A 2,468 rupee text should take 138,298 to 140,766, and it did.</p>
+
+<h3>Seeding and maintaining the map</h3>
+
+<p>The first pass of <code>/pstack:create-verification-skill</code> only seeded six features (pstack's own advice is to start with your top three to five). Before handing the skill over, it also has to run it once end to end, which is why I could trust it on day one. Then I ran <code>/pstack:maintain-verification-skill</code> that same evening. It sent one subagent to read the source behind each feature, drove all of them live, added the three it missed (Home, Budgets and Subscriptions) and reworked the six it already had. A second pass the next day didn't add anything, just fixed recipes that had drifted from the app.</p>
+
+<div class="stage dl-stage dl-grow" id="devlog-01-grow">
+  <div class="dl-head">
+    <span class="dl-title">The feature map, pass by pass</span>
+  </div>
+  <div class="tiles" data-tiles></div>
+  <p class="summary" data-summary aria-live="polite"></p>
+  <div class="dl-bar" data-passes></div>
+</div>
+
+<p>Poteto recommends running the maintain pass at least once a day, ideally on a schedule. So far I have run it twice, by hand. That, and actually having lint and type checks run on every change, is probably where I go next.</p>
+
+<p>I also want to learn how to write my own lint rules, mainly so I can get rid of comments in the codebase. I'll admit this one is me blindly following advice from the podcast, but the way they explained why comments can suck made sense to me, so I want to try it out. And for the stuff that does need explaining, I heard that writing tests is a good way to lock that behaviour in instead. Loops and running a bunch of agents in parallel are way in the future, if this app ever takes off (if it even does).</p>
+
+<h2>Okay, that's it for now</h2>
+
+<p>This is all so new to me, but it's fascinating, so I'm going to dig deeper and keep sharing what I figure out. I will try to keep these dev logs going, because writing them is how I get a deeper understanding of things, and it's also a nice way to share my progress and thoughts with you guys.</p>
+
+<p>There's probably a lot here I got wrong or didn't fully understand. If you spot anything obvious and you made it this far (kudos, and thanks), reach out on one of my socials and tell me where I went wrong. I would love to hear your feedback.</p>
+
+<p>P.S. I might be a bit late to all of this, but hey, better late than never, right? ...Right?</p>
+
+<script type="module">
+  // ---------- Trust ladder ----------
+  {
+    const root = document.getElementById("devlog-01-ladder");
+    const list = root.querySelector("[data-rungs]");
+    const detail = root.querySelector("[data-detail]");
+    const rungs = [
+      { name: "The codebase itself", state: "unknown", catches: "Make the mistake impossible. The structure of the code or a check at build time means the wrong thing can't even be written.",
+        mine: "Honestly, I don't know. I haven't really gone through the code to check, so I can't say either way. And I'll admit that's kind of a huge flaw on my part, since I'm the only developer on it. If I don't know, nobody does. Fixing that is probably a dev log of its own." },
+      { name: "Lint, types and CI", state: "half", catches: "If it can't be impossible, make a machine catch it every time: a lint rule, a type error, a failing CI check.",
+        mine: "TypeScript, lint and 18 test files, but no CI or hooks yet, so nothing forces them to run. Next I want to learn to write my own lint rules, starting with one that gets rid of comments, and use tests for the behaviour those comments were explaining." },
+      { name: "Rules and skills", state: "full", catches: "If a machine can't catch it, write it down where the agent will read it: CLAUDE.md, AGENTS.md, skills.",
+        mine: "A CLAUDE.md and an AGENTS.md that I keep adding to, plus the skills I use day to day." },
+      { name: "Review", state: "half", catches: "The last resort: a person reading the change. Slow, and easy to skip when you are tired.",
+        mine: "Me, reading diffs. Sometimes. Honestly, this is the rung I want to lean on the least." },
+      { name: "Verification", state: "full", here: true, catches: "The agent drives the real app and brings back proof the change works, so you can trust its work without watching it.",
+        mine: "verify-wherewithal: an emulator, a feature map of nine features, and before, after and second-view proof." },
+      { name: "Loops and parallel agents", state: "none", next: true, catches: "Once you trust one agent's work, let it run on its own, or run many at once. You earn this rung, you don't start on it.",
+        mine: "Way in the future, if this app ever takes off (if it even does)." },
+    ];
+    let current = rungs.findIndex((r) => r.here);
+
+    list.innerHTML = rungs.map((r, i) => `
+      <li class="${r.next ? "next" : ""}">
+        <button data-i="${i}" aria-pressed="false">
+          <i class="dot ${r.state}"></i><span>${r.name}</span>${r.here ? '<span class="here">I am here</span>' : ""}
+        </button>
+      </li>`).join("");
+
+    function show(i) {
+      current = i;
+      const r = rungs[i];
+      list.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.i) === i)));
+      detail.innerHTML = `
+        <h4>${r.name}</h4>
+        <p class="kicker">Rung ${i + 1} of ${rungs.length}${r.next ? " · next" : ""}</p>
+        <p>${r.catches}</p>
+        <p class="mine"><strong>Wherewithal:</strong> ${r.mine}</p>`;
+    }
+    list.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-i]");
+      if (b) show(Number(b.dataset.i));
+    });
+    show(current);
+  }
+
+  // ---------- Map vs agent ----------
+  {
+    const root = document.getElementById("devlog-01-map");
+    const phone = root.querySelector("[data-phone]");
+    const stepsEl = root.querySelector("[data-steps]");
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+
+    // Each element: [class, what I see (html), what the agent reads from the XML]
+    const home = (total, waiting) => [
+      ["head", "<span>Home</span>", 'text="Home"'],
+      ["big", `<span>${total}</span>`, `text="${total}"`],
+      ["sub", "<span>LKR spent this month</span>", 'text="LKR spent this month"'],
+      ["row", `<span>${waiting} waiting in Review</span><span>›</span>`, `content-desc="${waiting} waiting in Review" clickable="true"${waiting === 101 ? ' bounds="[257,2292][920,2436]"' : ""}`],
+      ["head", "<span>Latest</span>", 'text="Latest"'],
+    ];
+    const steps = [
+      { name: "Before", map: "Dump Home, then search Transactions for PROOF. It reads “No transactions match.”",
+        agent: "ui.mjs dump, then tap Latest, type PROOF and dump again. Pass if the search is empty.",
+        screen: [...home("138,298", 101), ["note", "<span>Search “PROOF”: No transactions match.</span>", 'text="No transactions match."']], flash: [1] },
+      { name: "Arrive", map: "Send a debit of 2,468 at PROOF STORE. It stops if the message didn't reach the inbox.",
+        agent: "sms.mjs sends it with adb emu sms send. Pass if the inbox count went up.",
+        screen: [...home("138,298", 101), ["note", "<span>A new text is in the inbox, but nothing on screen changes. There's no background receiver.</span>", "(no change in the XML)"]], flash: [5] },
+      { name: "Check", map: "Go to Review, tap “Check for new messages”. The row reads “1 new transaction”.",
+        agent: "tapre the Review row, tapre the check row, then wait for “new transaction” for up to 30 s.",
+        screen: [["head", "<span>Review</span>", 'text="Review"'], ["row", "<span>Check for new messages</span>", 'text="Check for new messages" clickable="true"'], ["sub", "<span>1 new transaction. Last checked today at 23:14</span>", 'text="1 new transaction. Last checked today at 23:14"'], ["row", "<span>Skipped messages</span><span>›</span>", 'text="Skipped messages" clickable="true"']], flash: [2] },
+      { name: "Second view", map: "Search Transactions for PROOF again. The PROOF STORE row is there under today's date.",
+        agent: "Search again and dump. Pass if the merchant, the account and 2,468.00 are all in one row.",
+        screen: [["head", "<span>Transactions</span>", 'text="Transactions"'], ["sub", "<span>23 Nov 2026</span>", 'text="23 Nov 2026"'], ["row", "<span>PROOF STORE<br><small>No category · ALPHABNK 4821</small></span><span>2,468.00</span>", 'text="PROOF STORE" text="No category · ALPHABNK 4821" text="2,468.00"']], flash: [2] },
+      { name: "Total", map: "Dump the top of Home. The month's spent is larger by exactly the amount sent.",
+        agent: "Read the first number in the dump. 140,766 − 138,298 = 2,468, so it passes.",
+        screen: home("140,766", 102), flash: [1, 3] },
+    ];
+    let i = 0;
+    let see = "user";
+
+    stepsEl.innerHTML = steps.map((s, n) => `
+      <li><button data-n="${n}" aria-pressed="false">
+        <b>${n + 1}. ${s.name}</b>
+        <span class="col"><small>The map says</small>${s.map}</span>
+        <span class="col"><small>Claude does</small>${s.agent}</span>
+      </button></li>`).join("");
+
+    function render() {
+      const s = steps[i];
+      phone.classList.toggle("agent", see === "agent");
+      phone.innerHTML = s.screen.map(([cls, html, xml], n) =>
+        `<div class="el ${cls}${s.flash.includes(n) ? " flash" : ""}">${html}<span class="x">&lt;node ${esc(xml)}&gt;</span></div>`).join("");
+      stepsEl.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.n) === i)));
+      root.querySelectorAll("[data-see]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.see === see)));
+    }
+    stepsEl.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-n]");
+      if (b) { i = Number(b.dataset.n); render(); }
+    });
+    root.querySelectorAll("[data-see]").forEach((b) => b.addEventListener("click", () => { see = b.dataset.see; render(); }));
+    render();
+  }
+
+  // ---------- Feature map growth ----------
+  {
+    const root = document.getElementById("devlog-01-grow");
+    const tilesEl = root.querySelector("[data-tiles]");
+    const summary = root.querySelector("[data-summary]");
+    const bar = root.querySelector("[data-passes]");
+    const features = ["Setup", "Messages", "Transactions", "Review", "Add or change", "Backup", "Home", "Budgets", "Subscriptions"];
+    const passes = [
+      { label: "Create · 20 Nov", state: ["new", "new", "new", "new", "new", "new", "absent", "absent", "absent"],
+        text: "The first pass seeds six features with 40 sub-features between them, then runs the new skill once end to end before handing it over." },
+      { label: "Maintain #1 · 20 Nov", state: ["changed", "changed", "changed", "changed", "changed", "changed", "new", "new", "new"],
+        text: "That same evening: Home, Budgets and Subscriptions get added, and all six existing features are reworked after a live drive. 9 features, 65 sub-features." },
+      { label: "Maintain #2 · 21 Nov", state: ["same", "changed", "changed", "changed", "changed", "same", "same", "same", "changed"],
+        text: "The next day nothing is added. A few recipes that had drifted from the app get fixed. Still 9 features, 65 sub-features." },
+    ];
+    const tag = { new: "added", changed: "updated", same: "unchanged", absent: "" };
+    let p = 0;
+
+    tilesEl.innerHTML = features.map((f) => `<div class="tile"><b>${f}</b><small></small></div>`).join("");
+    bar.innerHTML = passes.map((x, n) => `<button data-p="${n}" aria-pressed="false">${x.label}</button>`).join("");
+
+    function render() {
+      const pass = passes[p];
+      tilesEl.querySelectorAll(".tile").forEach((t, n) => {
+        const st = pass.state[n];
+        t.className = `tile ${st}`;
+        t.querySelector("small").textContent = tag[st];
+      });
+      summary.textContent = pass.text;
+      bar.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.p) === p)));
+    }
+    bar.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-p]");
+      if (b) { p = Number(b.dataset.p); render(); }
+    });
+    render();
+  }
+</script>
